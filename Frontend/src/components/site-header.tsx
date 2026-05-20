@@ -1,24 +1,35 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Moon, Sun, Search, Menu, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "./theme-provider";
+import { useTheme } from "@/hooks/use-theme";
 import { GlobalSearch } from "./global-search";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAppDispatch } from "@/store/hooks";
+import { setGlobalSearchOpen } from "@/store/slices/toolsSlice";
 
 const nav = [
-  { to: "/", label: "Home" },
-  { to: "/tools", label: "Tools" },
-  { to: "/blog", label: "Blog" },
+  { href: "/", label: "Home" },
+  { href: "/tools", label: "Tools" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export function SiteHeader() {
   const { theme, toggle } = useTheme();
-  const [searchOpen, setSearchOpen] = useState(false);
+  const dispatch = useAppDispatch();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -31,12 +42,12 @@ export function SiteHeader() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setSearchOpen(true);
+        dispatch(setGlobalSearchOpen(true));
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [dispatch]);
 
   return (
     <>
@@ -46,7 +57,7 @@ export function SiteHeader() {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
           "fixed top-0 inset-x-0 z-50 transition-all duration-300",
-          scrolled ? "py-2" : "py-4",
+          scrolled ? "py-1.5" : "py-3",
         )}
       >
         <div className="mx-auto max-w-7xl px-4">
@@ -61,11 +72,11 @@ export function SiteHeader() {
             <nav className="hidden md:flex items-center gap-1">
               {nav.map((n) => {
                 const active =
-                  n.to === "/" ? pathname === "/" : pathname.startsWith(n.to);
+                  n.href === "/" ? pathname === "/" : pathname.startsWith(n.href);
                 return (
                   <Link
-                    key={n.to}
-                    to={n.to}
+                    key={n.href}
+                    href={n.href}
                     className={cn(
                       "relative px-3 py-1.5 text-sm rounded-lg transition-colors",
                       active
@@ -87,51 +98,84 @@ export function SiteHeader() {
             </nav>
 
             <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground bg-secondary/40 hover:bg-secondary/70 transition-colors h-9 px-3 rounded-lg border border-border"
-              >
-                <Search className="h-3.5 w-3.5" />
-                <span>Search tools…</span>
-                <kbd className="ml-2 font-mono text-[10px] px-1.5 py-0.5 rounded bg-background/60 border border-border">
-                  ⌘K
-                </kbd>
-              </button>
-              <button
-                onClick={() => setSearchOpen(true)}
-                className="sm:hidden h-9 w-9 grid place-items-center rounded-lg hover:bg-secondary/60"
-                aria-label="Search"
-              >
-                <Search className="h-4 w-4" />
-              </button>
-              <button
-                onClick={toggle}
-                className="h-9 w-9 grid place-items-center rounded-lg hover:bg-secondary/60 transition-colors"
-                aria-label="Toggle theme"
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={theme}
-                    initial={{ rotate: -90, opacity: 0 }}
-                    animate={{ rotate: 0, opacity: 1 }}
-                    exit={{ rotate: 90, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => dispatch(setGlobalSearchOpen(true))}
+                    className="hidden sm:flex h-9 gap-2 text-xs text-muted-foreground bg-secondary/40 border-border"
                   >
-                    {theme === "dark" ? (
-                      <Sun className="h-4 w-4" />
-                    ) : (
-                      <Moon className="h-4 w-4" />
-                    )}
-                  </motion.span>
-                </AnimatePresence>
-              </button>
-              <button
-                onClick={() => setMenuOpen((v) => !v)}
-                className="md:hidden h-9 w-9 grid place-items-center rounded-lg hover:bg-secondary/60"
-                aria-label="Menu"
-              >
-                {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-              </button>
+                    <Search className="h-3.5 w-3.5" />
+                    <span>Search tools…</span>
+                    <kbd className="ml-2 font-mono text-[10px] px-1.5 py-0.5 rounded bg-background/60 border border-border">
+                      ⌘K
+                    </kbd>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Search all tools (⌘K)</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => dispatch(setGlobalSearchOpen(true))}
+                    className="sm:hidden"
+                    aria-label="Search"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Search tools</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggle}
+                    aria-label="Toggle theme"
+                  >
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.span
+                        key={theme}
+                        initial={{ rotate: -90, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: 90, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {theme === "dark" ? (
+                          <Sun className="h-4 w-4" />
+                        ) : (
+                          <Moon className="h-4 w-4" />
+                        )}
+                      </motion.span>
+                    </AnimatePresence>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMenuOpen((v) => !v)}
+                    className="md:hidden"
+                    aria-label="Menu"
+                  >
+                    {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{menuOpen ? "Close menu" : "Open menu"}</TooltipContent>
+              </Tooltip>
             </div>
           </div>
 
@@ -145,8 +189,8 @@ export function SiteHeader() {
               >
                 {nav.map((n) => (
                   <Link
-                    key={n.to}
-                    to={n.to}
+                    key={n.href}
+                    href={n.href}
                     onClick={() => setMenuOpen(false)}
                     className="block px-3 py-2 rounded-lg text-sm hover:bg-secondary/60"
                   >
@@ -159,7 +203,7 @@ export function SiteHeader() {
         </div>
       </motion.header>
 
-      <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+      <GlobalSearch />
     </>
   );
 }

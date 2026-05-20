@@ -10,6 +10,13 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+package-lock.json
+yarn.lock
+bun.lock
+bun.lockb
+
+.pnpm-store
+
 .output
 .vinxi
 .tanstack/**

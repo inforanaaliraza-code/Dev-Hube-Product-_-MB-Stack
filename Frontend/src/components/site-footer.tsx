@@ -1,6 +1,8 @@
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { Github, Twitter } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 export function SiteFooter() {
   return (
@@ -15,10 +17,10 @@ export function SiteFooter() {
             </p>
           </div>
           <nav className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <Link to="/tools" className="hover:text-foreground transition-colors">
+            <Link href="/tools" className="hover:text-foreground transition-colors">
               Tools
             </Link>
-            <Link to="/" className="hover:text-foreground transition-colors">
+            <Link href="/" className="hover:text-foreground transition-colors">
               Blog
             </Link>
             <a href="/sitemap.xml" className="hover:text-foreground transition-colors">
@@ -26,24 +28,21 @@ export function SiteFooter() {
             </a>
           </nav>
           <div className="flex items-center gap-2">
-            <a
-              href="#"
-              className="h-9 w-9 grid place-items-center rounded-lg hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="GitHub"
-            >
-              <Github className="h-4 w-4" />
-            </a>
-            <a
-              href="#"
-              className="h-9 w-9 grid place-items-center rounded-lg hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Twitter"
-            >
-              <Twitter className="h-4 w-4" />
-            </a>
+            <Button variant="ghost" size="icon" asChild>
+              <a href="#" aria-label="GitHub">
+                <Github className="h-4 w-4" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="icon" asChild>
+              <a href="#" aria-label="Twitter">
+                <Twitter className="h-4 w-4" />
+              </a>
+            </Button>
           </div>
         </div>
-        <p className="mt-8 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} devhub. Built with TanStack Start & Lovable Cloud.
+        <Separator className="my-8" />
+        <p className="text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Dev Hube. Built with Next.js & TypeScript.
         </p>
       </div>
     </footer>

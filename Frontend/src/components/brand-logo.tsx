@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 type Variant = "header" | "footer";
@@ -16,13 +17,12 @@ const sizes: Record<Variant, string> = {
 
 export function BrandLogo({ variant = "header", className, linked = true }: Props) {
   const img = (
-    <img
+    <Image
       src="/logo.png"
-      alt="DevHub"
+      alt="Dev Hube"
       width={200}
       height={48}
-      decoding="async"
-      fetchPriority={variant === "header" ? "high" : "auto"}
+      priority={variant === "header"}
       className={cn(
         sizes[variant],
         "object-contain object-left select-none",
@@ -36,9 +36,9 @@ export function BrandLogo({ variant = "header", className, linked = true }: Prop
 
   return (
     <Link
-      to="/"
+      href="/"
       className="inline-flex shrink-0 items-center rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-opacity hover:opacity-90 active:opacity-95"
-      aria-label="DevHub home"
+      aria-label="Dev Hube home"
     >
       {img}
     </Link>
