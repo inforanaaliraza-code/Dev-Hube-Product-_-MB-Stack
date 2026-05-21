@@ -52,7 +52,7 @@ export function Hero() {
         </h1>
 
         <p className="mt-4 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
-          Format, decode, generate, and test — every tool you need to ship faster, in
+          Format, decode, generate, and test every tool you need to ship faster, in
           one beautifully fast place.
         </p>
 
