@@ -40,11 +40,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useWorkflowRunner } from "@/components/tools/shared/tool-workflow";
+import { useWorkerHealth, WORKERS_START_HINT } from "@/components/tools/shared/use-worker-health";
 import { glassCard } from "@/lib/ui-classes";
 import { cn } from "@/lib/utils";
 
 const POLL_MS = 8000;
-const WORKER_HEALTH_MS = 60000;
 const RANDOM_DOMAIN = "__random__";
 
 function splitAddress(address: string) {
@@ -60,10 +61,10 @@ export function TempMailTool() {
   const [messages, setMessages] = useState<TempMessageSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<TempMessageDetail | null>(null);
-  const [workerHealthy, setWorkerHealthy] = useState<boolean | null>(null);
+  const { healthy: workerHealthy } = useWorkerHealth(getWorkerHealth);
   const [closing, setClosing] = useState(false);
   const [booting, setBooting] = useState(true);
-  const [creating, setCreating] = useState(false);
+  const { run: flowRun, busy: creating } = useWorkflowRunner("stream");
   const [refreshing, setRefreshing] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [domains, setDomains] = useState<string[]>([]);
@@ -104,15 +105,6 @@ export function TempMailTool() {
     setMessages([]);
     setSelectedId(null);
     setDetail(null);
-  }, []);
-
-  const checkWorkerHealth = useCallback(async () => {
-    try {
-      const health = await getWorkerHealth();
-      setWorkerHealthy(health.ok);
-    } catch {
-      setWorkerHealthy(false);
-    }
   }, []);
 
   const loadMessages = useCallback(
@@ -197,29 +189,28 @@ export function TempMailTool() {
   }, [loadMessages]);
 
   const handleNewAddress = useCallback(async () => {
-    setCreating(true);
     try {
-      if (mailbox) {
-        try {
-          await deleteMailbox(mailbox.id);
-        } catch {
+      await flowRun(async () => {
+        if (mailbox) {
+          try {
+            await deleteMailbox(mailbox.id);
+          } catch {
+          }
         }
-      }
-      const created = await createMailbox(buildCreateOptions());
-      setStoredMailboxId(created.id);
-      setMailbox(created);
-      applyAddressPrefs(created.address);
-      setMessages([]);
-      setSelectedId(null);
-      setDetail(null);
-      await loadMessages(created.id, true);
-      toast.success("New address ready");
+        const created = await createMailbox(buildCreateOptions());
+        setStoredMailboxId(created.id);
+        setMailbox(created);
+        applyAddressPrefs(created.address);
+        setMessages([]);
+        setSelectedId(null);
+        setDetail(null);
+        await loadMessages(created.id, true);
+        toast.success("New address ready");
+      }, "Creating inbox…");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not create address");
-    } finally {
-      setCreating(false);
     }
-  }, [loadMessages, mailbox]);
+  }, [flowRun, loadMessages, mailbox]);
 
   const handleCloseInbox = useCallback(async () => {
     if (!mailbox) return;
@@ -257,16 +248,11 @@ export function TempMailTool() {
         }
       }
     })();
-    void checkWorkerHealth();
-    const healthTimer = setInterval(() => {
-      void checkWorkerHealth();
-    }, WORKER_HEALTH_MS);
     void bootstrapRef.current();
     return () => {
       cancelled = true;
-      clearInterval(healthTimer);
     };
-  }, [checkWorkerHealth]);
+  }, []);
 
   const mailboxId = mailbox?.id;
 
@@ -444,7 +430,12 @@ export function TempMailTool() {
                   variant="default"
                   size="sm"
                   disabled={refreshing || !mailbox || booting}
-                  onClick={() => mailbox && void loadMessages(mailbox.id)}
+                  onClick={() => {
+                    if (!mailbox) return;
+                    void flowRun(async () => {
+                      await loadMessages(mailbox.id);
+                    }, "Refreshing inbox…");
+                  }}
                 >
                   {refreshing ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
@@ -494,9 +485,7 @@ export function TempMailTool() {
                       </Badge>
                     ) : null}
                     {workerHealthy === false ? (
-                      <p className="text-[11px] text-amber-400/90 w-full">
-                        Inbox still works. Start Python: Services\temp-mail → uvicorn main:app --port 8100
-                      </p>
+                      <p className="text-[11px] text-amber-400/90 w-full">{WORKERS_START_HINT}</p>
                     ) : null}
                     {workerHealthy === null ? (
                       <Badge variant="outline" className="text-[10px]">

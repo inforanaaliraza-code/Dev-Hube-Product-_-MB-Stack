@@ -1,0 +1,39 @@
+### List all tools
+GET {{baseUrl}}/tools
+Accept: application/json
+
+###
+
+### List tools — filter by category
+GET {{baseUrl}}/tools?category=PDF
+Accept: application/json
+
+###
+
+### List tools — search
+GET {{baseUrl}}/tools?search=qr
+Accept: application/json
+
+###
+
+### List tools — featured only
+GET {{baseUrl}}/tools?featured=true
+Accept: application/json
+
+###
+
+### Get tool by slug
+GET {{baseUrl}}/tools/temp-mail
+Accept: application/json
+
+###
+
+### Get tool by slug — QR
+GET {{baseUrl}}/tools/qr-generator
+Accept: application/json
+
+###
+
+### List categories
+GET {{baseUrl}}/categories
+Accept: application/json

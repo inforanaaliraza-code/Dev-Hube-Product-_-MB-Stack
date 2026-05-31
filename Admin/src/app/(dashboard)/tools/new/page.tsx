@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AdminHeader } from "@/components/admin/header";
+import { WpPageHeader } from "@/components/admin/wp-page-header";
+import { WpPostbox } from "@/components/admin/wp-postbox";
 import { ToolForm } from "@/components/admin/tool-form";
 import { createTool } from "@/store/slices/toolsAdminSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -26,10 +27,10 @@ export default function NewToolPage() {
 
   return (
     <>
-      <AdminHeader title="New tool" />
-      <main className="p-4 md:p-6">
+      <WpPageHeader title="Add New Tool" />
+      <WpPostbox title="Tool details">
         <ToolForm submitLabel="Create tool" onSubmit={handleSubmit} />
-      </main>
+      </WpPostbox>
     </>
   );
 }

@@ -1,0 +1,15 @@
+{
+  "workers": [
+    { "id": "temp-mail", "dir": "temp-mail", "port": 8100 },
+    { "id": "qr-generator", "dir": "qr-generator", "port": 8101 },
+    { "id": "image-compressor", "dir": "image-compressor", "port": 8102 },
+    { "id": "pdf-to-word", "dir": "pdf-to-word", "port": 8103 },
+    { "id": "merge-pdf", "dir": "merge-pdf", "port": 8104 },
+    { "id": "split-pdf", "dir": "split-pdf", "port": 8105 },
+    { "id": "compress-pdf", "dir": "compress-pdf", "port": 8106 },
+    { "id": "ai-assistant", "dir": "ai-assistant", "port": 8107 },
+    { "id": "image-to-text", "dir": "image-to-text", "port": 8108, "python_max_minor": 13 },
+    { "id": "speech-to-text", "dir": "speech-to-text", "port": 8109 },
+    { "id": "image-converter", "dir": "image-converter", "port": 8110 }
+  ]
+}

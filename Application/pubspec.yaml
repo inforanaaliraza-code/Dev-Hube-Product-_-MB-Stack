@@ -1,0 +1,53 @@
+name: dev_hube
+description: Dev Hube mobile app — developer utility hub
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  get: ^4.7.2
+  get_storage: ^2.1.1
+  dio: ^5.8.0+1
+  google_fonts: ^6.2.1
+  url_launcher: ^6.3.1
+  webview_flutter: ^4.10.0
+  intl: ^0.20.2
+  share_plus: ^10.1.4
+  file_picker: ^10.1.4
+  cryptography: ^2.7.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: assets/fevicon.png
+  adaptive_icon_background: "#0A0A0F"
+  adaptive_icon_foreground: assets/fevicon.png
+  web:
+    generate: true
+    image_path: assets/fevicon.png
+    background_color: "#0A0A0F"
+    theme_color: "#A855F7"
+  windows:
+    generate: true
+    image_path: assets/fevicon.png
+    icon_size: 256
+  macos:
+    generate: true
+    image_path: assets/fevicon.png
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logo.png
+    - assets/fevicon.png

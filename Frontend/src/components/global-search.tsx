@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import Fuse from "fuse.js";
 import { ArrowRight } from "lucide-react";
 import { ToolIcon } from "@/components/tool-icon";
+import { TOOL_ACCENT_ICON, TOOL_ACCENT_RING } from "@/lib/tool-visuals";
 import { tools } from "@/lib/tools";
+import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
   resetGlobalSearch,
@@ -56,6 +58,7 @@ export function GlobalSearch() {
       shouldFilter={false}
       commandValue={q}
       onCommandValueChange={(value) => dispatch(setGlobalSearchQuery(value))}
+      title="Search tools"
     >
       <div className="flex items-center gap-3 border-b border-border pr-3">
         <CommandInput placeholder="Search tools, categories…" className="h-12 flex-1" />
@@ -78,12 +81,17 @@ export function GlobalSearch() {
               value={t.slug}
               onSelect={() => {
                 dispatch(setGlobalSearchOpen(false));
-                router.push("/tools");
+                router.push(`/tools/${t.slug}`);
               }}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5"
             >
-              <div className="h-9 w-9 rounded-lg bg-secondary/60 grid place-items-center">
-                <ToolIcon name={t.icon} className="h-4 w-4 text-foreground" />
+              <div
+                className={cn(
+                  "h-9 w-9 rounded-lg border grid place-items-center shrink-0",
+                  TOOL_ACCENT_RING[t.accent],
+                )}
+              >
+                <ToolIcon name={t.icon} className={cn("h-4 w-4", TOOL_ACCENT_ICON[t.accent])} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{t.name}</p>

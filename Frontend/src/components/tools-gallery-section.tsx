@@ -10,6 +10,7 @@ import { getToolsForGallery } from "@/lib/gallery-items";
 import { buildToolsGalleryItems } from "@/lib/tool-gallery-canvas";
 import { tools } from "@/lib/tools";
 import { useTheme } from "@/hooks/use-theme";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 const CircularGallery = dynamic(() => import("@/components/circular-gallery/CircularGallery"), {
   ssr: false,
@@ -17,6 +18,7 @@ const CircularGallery = dynamic(() => import("@/components/circular-gallery/Circ
 
 export function ToolsGallerySection() {
   const { theme } = useTheme();
+  const { settings } = useSiteSettings();
   const textColor = theme === "dark" ? "#fafafa" : "#171717";
   const galleryTools = useMemo(() => getToolsForGallery(tools), []);
   const [items, setItems] = useState<GalleryItem[]>([]);
@@ -51,10 +53,10 @@ export function ToolsGallerySection() {
         {items.length > 0 ? (
           <CircularGallery
             items={items}
-            bend={1}
+            bend={settings.gallery.bend}
             borderRadius={0.05}
-            scrollSpeed={2}
-            scrollEase={0.05}
+            scrollSpeed={settings.gallery.scrollSpeed}
+            scrollEase={settings.gallery.scrollEase}
             textColor={textColor}
             font='bold 30px "Space Grotesk", system-ui, sans-serif'
           />

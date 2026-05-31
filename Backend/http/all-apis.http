@@ -1,0 +1,1785 @@
+# Dev Hube — All APIs (NestJS {{baseUrl}} + Python workers)
+# Environment: status bar → dev | Config: http-client.env.json
+
+# ═══════════════════════════════════════════════════════════════
+# HEALTH
+# ═══════════════════════════════════════════════════════════════
+
+### API health
+GET {{baseUrl}}/health
+Accept: application/json
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# AUTH
+# ═══════════════════════════════════════════════════════════════
+
+### Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}",
+  "name": "Test User"
+}
+
+###
+
+### Login
+# @name userLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+###
+
+@userToken = {{userLogin.response.body.accessToken}}
+
+### Me (JWT)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{userToken}}
+
+###
+
+### Admin login
+# @name adminLogin
+POST {{baseUrl}}/auth/admin/login
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.accessToken}}
+
+### Admin me
+GET {{baseUrl}}/auth/admin/me
+Authorization: Bearer {{adminToken}}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# TOOLS (PUBLIC)
+# ═══════════════════════════════════════════════════════════════
+
+### List tools
+GET {{baseUrl}}/tools
+
+###
+
+### List tools — category
+GET {{baseUrl}}/tools?category=PDF
+
+###
+
+### List tools — search
+GET {{baseUrl}}/tools?search=qr
+
+###
+
+### List tools — featured
+GET {{baseUrl}}/tools?featured=true
+
+###
+
+### Tool by slug
+GET {{baseUrl}}/tools/temp-mail
+
+###
+
+### Categories
+GET {{baseUrl}}/categories
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# TEMP MAIL
+# ═══════════════════════════════════════════════════════════════
+
+### Health
+GET {{baseUrl}}/temp-mail/health
+
+###
+
+### Domains
+GET {{baseUrl}}/temp-mail/domains
+
+###
+
+### Create mailbox
+# @name createMailbox
+POST {{baseUrl}}/temp-mail/mailboxes
+Content-Type: application/json
+
+{}
+
+###
+
+### Create mailbox — custom
+POST {{baseUrl}}/temp-mail/mailboxes
+Content-Type: application/json
+
+{
+  "localPart": "john.test",
+  "domain": "virgilian.com"
+}
+
+###
+
+@mailboxId = {{createMailbox.response.body.id}}
+
+### Get mailbox
+GET {{baseUrl}}/temp-mail/mailboxes/{{mailboxId}}
+
+###
+
+### List messages
+GET {{baseUrl}}/temp-mail/mailboxes/{{mailboxId}}/messages
+
+###
+
+### Message detail
+GET {{baseUrl}}/temp-mail/mailboxes/{{mailboxId}}/messages/{{messageId}}
+
+###
+
+### Delete mailbox
+DELETE {{baseUrl}}/temp-mail/mailboxes/{{mailboxId}}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# QR CODE GENERATOR
+# ═══════════════════════════════════════════════════════════════
+
+### Health
+GET {{baseUrl}}/qr-generator/health
+
+###
+
+### Create static QR
+# @name qrStatic
+POST {{baseUrl}}/qr-generator/codes
+Content-Type: application/json
+
+{
+  "mode": "static",
+  "contentType": "url",
+  "payload": "https://mbstack.net/",
+  "foregroundColor": "#000000",
+  "backgroundColor": "#ffffff",
+  "errorCorrection": "H",
+  "sizePx": 512
+}
+
+###
+
+### Create static + track scans
+# @name qrTracked
+POST {{baseUrl}}/qr-generator/codes
+Content-Type: application/json
+
+{
+  "mode": "static",
+  "contentType": "url",
+  "payload": "https://example.com",
+  "trackScans": true,
+  "foregroundColor": "#1a1a2e",
+  "backgroundColor": "#ffffff",
+  "errorCorrection": "H",
+  "sizePx": 512
+}
+
+###
+
+@qrCodeId = {{qrTracked.response.body.id}}
+@qrShortCode = {{qrTracked.response.body.shortCode}}
+
+### Create dynamic QR
+# @name qrDynamic
+POST {{baseUrl}}/qr-generator/codes
+Content-Type: application/json
+
+{
+  "mode": "dynamic",
+  "contentType": "url",
+  "payload": "https://google.com",
+  "foregroundColor": "#000000",
+  "backgroundColor": "#ffffff",
+  "errorCorrection": "H",
+  "sizePx": 512
+}
+
+###
+
+### Get QR
+GET {{baseUrl}}/qr-generator/codes/{{qrCodeId}}
+
+###
+
+### Regenerate image
+GET {{baseUrl}}/qr-generator/codes/{{qrCodeId}}/image
+
+###
+
+### Update dynamic URL
+PATCH {{baseUrl}}/qr-generator/codes/{{qrCodeId}}
+Content-Type: application/json
+
+{
+  "payload": "https://github.com"
+}
+
+###
+
+### Analytics
+GET {{baseUrl}}/qr-generator/codes/{{qrCodeId}}/analytics
+
+###
+
+### Redirect (scan)
+GET {{baseUrl}}/qr-generator/go/{{qrShortCode}}
+
+###
+
+### Delete QR
+DELETE {{baseUrl}}/qr-generator/codes/{{qrCodeId}}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# IMAGE COMPRESSOR
+# ═══════════════════════════════════════════════════════════════
+
+### Health
+GET {{baseUrl}}/image-compressor/health
+
+###
+
+### Compress (needs ./samples/photo.jpg)
+POST {{baseUrl}}/image-compressor/compress?quality=82&maxWidth=1920&outputFormat=auto&stripMetadata=true
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="photo.jpg"
+Content-Type: image/jpeg
+
+< ./samples/photo.jpg
+--B--
+
+###
+
+### Compress WebP
+POST {{baseUrl}}/image-compressor/compress?quality=70&maxWidth=1280&outputFormat=webp&stripMetadata=true
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="photo.png"
+Content-Type: image/png
+
+< ./samples/photo.png
+--B--
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# PDF TO WORD
+# ═══════════════════════════════════════════════════════════════
+
+### Health
+GET {{baseUrl}}/pdf-to-word/health
+
+###
+
+### Convert (needs ./samples/document.pdf)
+POST {{baseUrl}}/pdf-to-word/convert
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+### Convert pages 1–3
+POST {{baseUrl}}/pdf-to-word/convert?startPage=1&endPage=3
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# MERGE PDF
+# ═══════════════════════════════════════════════════════════════
+
+### Health
+GET {{baseUrl}}/merge-pdf/health
+
+###
+
+### Merge (needs ./samples/document.pdf — two parts)
+POST {{baseUrl}}/merge-pdf/merge
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="files"; filename="part-a.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B
+Content-Disposition: form-data; name="files"; filename="part-b.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# SPLIT PDF
+# ═══════════════════════════════════════════════════════════════
+
+### Health
+GET {{baseUrl}}/split-pdf/health
+
+###
+
+### Split range pages 1–2
+POST {{baseUrl}}/split-pdf/split?mode=range&startPage=1&endPage=2
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+### Split every page (ZIP)
+POST {{baseUrl}}/split-pdf/split?mode=each
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+### Inspect PDF (page count)
+POST {{baseUrl}}/split-pdf/inspect
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# COMPRESS PDF
+# ═══════════════════════════════════════════════════════════════
+
+### Health
+GET {{baseUrl}}/compress-pdf/health
+
+###
+
+### Compress PDF
+POST {{baseUrl}}/compress-pdf/compress?level=medium
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# SITE (PUBLIC CMS + SETTINGS + TOOL BLOGS)
+# ═══════════════════════════════════════════════════════════════
+
+### Public site settings
+GET {{baseUrl}}/site/settings
+
+###
+
+### Public navigation
+GET {{baseUrl}}/site/navigation
+
+###
+
+### Published tool blogs
+GET {{baseUrl}}/site/tool-blogs
+
+###
+
+### Tool blog by slug
+GET {{baseUrl}}/site/tools/qr-generator/blog
+
+###
+
+### CMS page by slug
+GET {{baseUrl}}/site/pages/about
+
+###
+
+### CMS posts list
+GET {{baseUrl}}/site/posts
+
+###
+
+### CMS post by slug
+GET {{baseUrl}}/site/posts/hello-world
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# AI TOOLS (OpenAI via ai-assistant worker :8107)
+# ═══════════════════════════════════════════════════════════════
+
+### AI Code Generator — health
+GET {{baseUrl}}/ai-code-generator/health
+
+###
+
+### AI Code Generator — generate
+POST {{baseUrl}}/ai-code-generator/generate
+Content-Type: application/json
+
+{
+  "prompt": "Write a TypeScript function that debounces a callback",
+  "language": "typescript"
+}
+
+###
+
+### AI Resume Builder — health
+GET {{baseUrl}}/ai-resume-builder/health
+
+###
+
+### AI Resume Builder — generate
+POST {{baseUrl}}/ai-resume-builder/generate
+Content-Type: application/json
+
+{
+  "fullName": "Jane Developer",
+  "jobTitle": "Full Stack Engineer",
+  "summary": "5 years building web apps",
+  "experience": "Led API design at Acme Corp",
+  "skills": "TypeScript, NestJS, PostgreSQL",
+  "education": "BSc Computer Science"
+}
+
+###
+
+### AI Paraphrase — health
+GET {{baseUrl}}/ai-paraphrase/health
+
+###
+
+### AI Paraphrase — rewrite
+POST {{baseUrl}}/ai-paraphrase/rewrite
+Content-Type: application/json
+
+{
+  "text": "This tool helps developers work faster every day.",
+  "tone": "professional"
+}
+
+###
+
+### AI Humanizer — health
+GET {{baseUrl}}/ai-humanizer/health
+
+###
+
+### AI Humanizer — rewrite
+POST {{baseUrl}}/ai-humanizer/rewrite
+Content-Type: application/json
+
+{
+  "text": "The aforementioned solution facilitates optimal outcomes.",
+  "tone": "casual"
+}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# IMAGE TO TEXT / SPEECH TO TEXT / IMAGE CONVERTER
+# ═══════════════════════════════════════════════════════════════
+
+### Image to text — health
+GET {{baseUrl}}/image-to-text/health
+
+###
+
+### Image to text — extract
+POST {{baseUrl}}/image-to-text/extract
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="screenshot.png"
+Content-Type: image/png
+
+< ./samples/photo.png
+--B--
+
+###
+
+### Speech to text — health
+GET {{baseUrl}}/speech-to-text/health
+
+###
+
+### Speech to text — transcribe
+POST {{baseUrl}}/speech-to-text/transcribe
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="audio.wav"
+Content-Type: audio/wav
+
+< ./samples/audio.wav
+--B--
+
+###
+
+### Image converter — health
+GET {{baseUrl}}/image-converter/health
+
+###
+
+### Image converter — convert to WebP
+POST {{baseUrl}}/image-converter/convert?format=webp
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="photo.png"
+Content-Type: image/png
+
+< ./samples/photo.png
+--B--
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# UTILITY TOOLS
+# ═══════════════════════════════════════════════════════════════
+
+### SQL Formatter — health
+GET {{baseUrl}}/sql-formatter/health
+
+###
+
+### SQL Formatter — format
+POST {{baseUrl}}/sql-formatter/format
+Content-Type: application/json
+
+{
+  "sql": "select id,name from users where active=1 order by id"
+}
+
+###
+
+### Password Generator — generate
+POST {{baseUrl}}/password-generator/generate
+Content-Type: application/json
+
+{
+  "length": 20,
+  "uppercase": true,
+  "lowercase": true,
+  "numbers": true,
+  "symbols": true
+}
+
+###
+
+### Password Generator — breach check
+POST {{baseUrl}}/password-generator/check-breach
+Content-Type: application/json
+
+{
+  "password": "password123"
+}
+
+###
+
+### Palette Generator — generate
+POST {{baseUrl}}/palette-generator/generate
+Content-Type: application/json
+
+{
+  "mode": "analogous",
+  "baseColor": "#7c3aed",
+  "count": 5
+}
+
+###
+
+### Markdown Editor — preview
+POST {{baseUrl}}/markdown-editor/preview
+Content-Type: application/json
+
+{
+  "markdown": "# Hello\n\n**Dev Hube** tools."
+}
+
+###
+
+### YouTube Thumbnail — resolve
+POST {{baseUrl}}/youtube-thumbnail/resolve
+Content-Type: application/json
+
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+}
+
+###
+
+### WHOIS Lookup
+POST {{baseUrl}}/whois-lookup/lookup
+Content-Type: application/json
+
+{
+  "domain": "example.com"
+}
+
+###
+
+### IP Lookup
+POST {{baseUrl}}/ip-lookup/lookup
+Content-Type: application/json
+
+{
+  "ip": "8.8.8.8"
+}
+
+###
+
+### Website Speed Test
+POST {{baseUrl}}/speed-test/run
+Content-Type: application/json
+
+{
+  "url": "https://example.com"
+}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# DEVTOOLS (formatting, encoding, text, SEO helpers)
+# ═══════════════════════════════════════════════════════════════
+
+### Meta Tags Generator
+POST {{baseUrl}}/meta-tags-generator/generate
+Content-Type: application/json
+
+{
+  "title": "Dev Hube",
+  "description": "Developer utilities",
+  "url": "https://example.com",
+  "image": "https://example.com/og.png"
+}
+
+###
+
+### Robots.txt Generator
+POST {{baseUrl}}/robots-txt/generate
+Content-Type: application/json
+
+{
+  "rules": [{ "agent": "*", "allow": ["/"], "disallow": ["/admin"] }],
+  "sitemap": "https://example.com/sitemap.xml"
+}
+
+###
+
+### Sitemap Generator
+POST {{baseUrl}}/sitemap-generator/generate
+Content-Type: application/json
+
+{
+  "urls": "https://example.com/\nhttps://example.com/tools"
+}
+
+###
+
+### JSON Validator
+POST {{baseUrl}}/json-validator/validate
+Content-Type: application/json
+
+{
+  "json": "{\"ok\":true}"
+}
+
+###
+
+### JSON Formatter
+POST {{baseUrl}}/json-formatter/format
+Content-Type: application/json
+
+{
+  "json": "{\"a\":1,\"b\":2}",
+  "minify": false
+}
+
+###
+
+### CSS Minifier
+POST {{baseUrl}}/css-minifier/minify
+Content-Type: application/json
+
+{
+  "css": ".btn { color: red; padding: 8px; }"
+}
+
+###
+
+### JS Beautifier
+POST {{baseUrl}}/js-beautifier/beautify
+Content-Type: application/json
+
+{
+  "code": "function sum(a,b){return a+b}"
+}
+
+###
+
+### HTML to Markdown
+POST {{baseUrl}}/html-to-markdown/convert
+Content-Type: application/json
+
+{
+  "html": "<h1>Title</h1><p>Paragraph</p>"
+}
+
+###
+
+### Regex Tester
+POST {{baseUrl}}/regex-tester/test
+Content-Type: application/json
+
+{
+  "pattern": "\\d+",
+  "flags": "g",
+  "text": "Order 42 and 99"
+}
+
+###
+
+### CSV to JSON
+POST {{baseUrl}}/csv-to-json/to-json
+Content-Type: application/json
+
+{
+  "csv": "name,age\nAli,30",
+  "delimiter": ","
+}
+
+###
+
+### JSON to CSV
+POST {{baseUrl}}/csv-to-json/to-csv
+Content-Type: application/json
+
+{
+  "json": "[{\"name\":\"Ali\",\"age\":30}]"
+}
+
+###
+
+### Base64 encode/decode
+POST {{baseUrl}}/base64/convert
+Content-Type: application/json
+
+{
+  "text": "Hello Dev Hube",
+  "mode": "encode"
+}
+
+###
+
+### JWT Decoder
+POST {{baseUrl}}/jwt-decoder/decode
+Content-Type: application/json
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
+}
+
+###
+
+### URL Encoder
+POST {{baseUrl}}/url-encoder/convert
+Content-Type: application/json
+
+{
+  "text": "hello world?q=1",
+  "mode": "encode"
+}
+
+###
+
+### UUID Generator
+POST {{baseUrl}}/uuid-generator/generate
+Content-Type: application/json
+
+{
+  "version": "v4",
+  "count": 3
+}
+
+###
+
+### API Tester
+POST {{baseUrl}}/api-tester/send
+Content-Type: application/json
+
+{
+  "method": "GET",
+  "url": "https://httpbin.org/get",
+  "headers": {},
+  "body": ""
+}
+
+###
+
+### OTP Detector
+POST {{baseUrl}}/otp-detector/detect
+Content-Type: application/json
+
+{
+  "subject": "Your code",
+  "text": "Your verification code is 482910"
+}
+
+###
+
+### Auto Code Reader (OTP detect)
+POST {{baseUrl}}/code-reader/detect
+Content-Type: application/json
+
+{
+  "subject": "Verification",
+  "text": "Code: 123456"
+}
+
+###
+
+### Color Picker convert
+POST {{baseUrl}}/color-picker/convert
+Content-Type: application/json
+
+{
+  "hex": "#7c3aed"
+}
+
+###
+
+### Contrast Checker
+POST {{baseUrl}}/contrast-checker/check
+Content-Type: application/json
+
+{
+  "foreground": "#ffffff",
+  "background": "#7c3aed"
+}
+
+###
+
+### Lorem Ipsum
+POST {{baseUrl}}/lorem-ipsum/generate
+Content-Type: application/json
+
+{
+  "type": "paragraphs",
+  "count": 2
+}
+
+###
+
+### Case Converter
+POST {{baseUrl}}/case-converter/convert
+Content-Type: application/json
+
+{
+  "text": "hello world example",
+  "mode": "camel"
+}
+
+###
+
+### Text Diff
+POST {{baseUrl}}/text-diff/diff
+Content-Type: application/json
+
+{
+  "left": "line one\nline two",
+  "right": "line one\nline three"
+}
+
+###
+
+### Word Counter
+POST {{baseUrl}}/word-counter/count
+Content-Type: application/json
+
+{
+  "text": "Dev Hube has many developer tools."
+}
+
+###
+
+### HTML Stripper
+POST {{baseUrl}}/html-stripper/strip
+Content-Type: application/json
+
+{
+  "html": "<p>Hello <strong>world</strong></p>"
+}
+
+###
+
+### Timestamp Converter
+POST {{baseUrl}}/timestamp-converter/convert
+Content-Type: application/json
+
+{
+  "value": "1715000000",
+  "mode": "unix-to-iso"
+}
+
+###
+
+### Cron Parser
+POST {{baseUrl}}/cron-parser/parse
+Content-Type: application/json
+
+{
+  "expression": "0 9 * * 1-5"
+}
+
+###
+
+### Hash Generator
+POST {{baseUrl}}/hash-generator/generate
+Content-Type: application/json
+
+{
+  "text": "dev hube",
+  "algorithms": ["sha256", "md5"]
+}
+
+###
+
+### Unit Converter
+POST {{baseUrl}}/unit-converter/convert
+Content-Type: application/json
+
+{
+  "value": 16,
+  "from": "px",
+  "to": "rem",
+  "rootPx": 16
+}
+
+###
+
+### User-Agent Parser
+POST {{baseUrl}}/user-agent-parser/parse
+Content-Type: application/json
+
+{
+  "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+}
+
+###
+
+### HTML Entities
+POST {{baseUrl}}/html-entities/convert
+Content-Type: application/json
+
+{
+  "text": "<div>Hello & world</div>",
+  "mode": "encode"
+}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# ADMIN — TOOLS
+# ═══════════════════════════════════════════════════════════════
+
+### List tools
+GET {{baseUrl}}/admin/tools
+Authorization: Bearer {{adminToken}}
+
+###
+
+### List tools — query
+GET {{baseUrl}}/admin/tools?category=Media&featured=true
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Get tool
+GET {{baseUrl}}/admin/tools/qr-generator
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Create tool
+POST {{baseUrl}}/admin/tools
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "slug": "demo-tool",
+  "name": "Demo Tool",
+  "tagline": "API test",
+  "description": "Created from REST Client all-apis.http smoke test.",
+  "category": "Formatting",
+  "icon": "wrench",
+  "accent": "violet",
+  "status": "soon",
+  "keywords": ["demo"],
+  "featured": false
+}
+
+###
+
+### Update tool
+PATCH {{baseUrl}}/admin/tools/qr-generator
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "ready",
+  "featured": true
+}
+
+###
+
+### Delete tool
+DELETE {{baseUrl}}/admin/tools/demo-tool
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Admin categories
+GET {{baseUrl}}/admin/categories
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Bulk tools action
+POST {{baseUrl}}/admin/tools/bulk
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "slugs": ["demo-tool"],
+  "action": "delete"
+}
+
+###
+
+### Get tool blog
+GET {{baseUrl}}/admin/tools/qr-generator/blog
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Upsert tool blog
+PUT {{baseUrl}}/admin/tools/qr-generator/blog
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "QR Code Generator Guide",
+  "excerpt": "How to create custom QR codes",
+  "body": "<p>Full article HTML here.</p>",
+  "status": "published",
+  "metaTitle": "QR Code Generator | Dev Hube",
+  "metaDescription": "Create custom QR codes with logos and colors"
+}
+
+###
+
+### Delete tool blog
+DELETE {{baseUrl}}/admin/tools/qr-generator/blog
+Authorization: Bearer {{adminToken}}
+
+###
+
+### List all tool blogs (admin)
+GET {{baseUrl}}/admin/tool-blogs
+Authorization: Bearer {{adminToken}}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# ADMIN — USERS
+# ═══════════════════════════════════════════════════════════════
+
+### List admins
+GET {{baseUrl}}/admin/users/admins
+Authorization: Bearer {{adminToken}}
+
+###
+
+### List public users
+GET {{baseUrl}}/admin/users/public
+Authorization: Bearer {{adminToken}}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# ADMIN — SETTINGS
+# ═══════════════════════════════════════════════════════════════
+
+### All settings
+GET {{baseUrl}}/admin/settings
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Update site
+PATCH {{baseUrl}}/admin/settings/site
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "value": {
+    "name": "Dev Hube",
+    "tagline": "The developer utility hub"
+  }
+}
+
+###
+
+### Update gallery
+PATCH {{baseUrl}}/admin/settings/gallery
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "value": {
+    "bend": 1,
+    "scrollSpeed": 2,
+    "scrollEase": 0.05
+  }
+}
+
+###
+
+### Update navigation
+PATCH {{baseUrl}}/admin/settings/navigation
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "value": {
+    "items": [
+      {
+        "id": "home",
+        "label": "Home",
+        "href": "/",
+        "target": "_self",
+        "sortOrder": 0,
+        "enabled": true
+      },
+      {
+        "id": "tools",
+        "label": "Tools",
+        "href": "/tools",
+        "target": "_self",
+        "sortOrder": 1,
+        "enabled": true
+      },
+      {
+        "id": "blog",
+        "label": "Blog",
+        "href": "/blog",
+        "target": "_self",
+        "sortOrder": 2,
+        "enabled": true
+      }
+    ]
+  }
+}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# ADMIN — PLUGINS
+# ═══════════════════════════════════════════════════════════════
+
+### List plugins
+GET {{baseUrl}}/admin/plugins
+Authorization: Bearer {{adminToken}}
+
+###
+
+### List plugins — type filter
+GET {{baseUrl}}/admin/plugins?type=worker
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Create plugin
+POST {{baseUrl}}/admin/plugins
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "slug": "demo-plugin",
+  "name": "Demo Plugin",
+  "description": "REST Client smoke test",
+  "version": "1.0.0",
+  "type": "integration",
+  "status": "inactive",
+  "category": "demo"
+}
+
+###
+
+### Get plugin
+GET {{baseUrl}}/admin/plugins/{{pluginId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Update plugin
+PATCH {{baseUrl}}/admin/plugins/{{pluginId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "active"
+}
+
+###
+
+### Bulk plugin actions
+POST {{baseUrl}}/admin/plugins/bulk/actions
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "ids": ["00000000-0000-4000-8000-000000000001"],
+  "action": "setStatus",
+  "status": "active"
+}
+
+###
+
+### Delete plugin
+DELETE {{baseUrl}}/admin/plugins/{{pluginId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# ADMIN — CMS
+# ═══════════════════════════════════════════════════════════════
+
+### List media
+GET {{baseUrl}}/admin/cms/media
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Upload media
+POST {{baseUrl}}/admin/cms/media
+Authorization: Bearer {{adminToken}}
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="photo.jpg"
+Content-Type: image/jpeg
+
+< ./samples/photo.jpg
+--B
+Content-Disposition: form-data; name="alt"
+
+Dev Hube logo
+--B--
+
+###
+
+### Delete media
+DELETE {{baseUrl}}/admin/cms/media/{{mediaId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Bulk delete media
+POST {{baseUrl}}/admin/cms/media/bulk
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "ids": []
+}
+
+###
+
+### List contents
+GET {{baseUrl}}/admin/cms/contents
+Authorization: Bearer {{adminToken}}
+
+###
+
+### List contents — pages only
+GET {{baseUrl}}/admin/cms/contents?type=page
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Get content
+GET {{baseUrl}}/admin/cms/contents/{{contentId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Create content (page)
+POST {{baseUrl}}/admin/cms/contents
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "slug": "about",
+  "title": "About Dev Hube",
+  "excerpt": "About us",
+  "body": "<p>Welcome</p>",
+  "type": "page",
+  "status": "published"
+}
+
+###
+
+### Update content
+PATCH {{baseUrl}}/admin/cms/contents/{{contentId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "About Dev Hube (updated)"
+}
+
+###
+
+### Bulk content actions
+POST {{baseUrl}}/admin/cms/contents/bulk
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "ids": [],
+  "action": "publish",
+  "status": "published"
+}
+
+###
+
+### Delete content
+DELETE {{baseUrl}}/admin/cms/contents/{{contentId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+### CMS navigation (admin)
+GET {{baseUrl}}/admin/cms/navigation
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Update CMS navigation
+PATCH {{baseUrl}}/admin/cms/navigation
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "id": "home",
+      "label": "Home",
+      "href": "/",
+      "target": "_self",
+      "sortOrder": 0,
+      "enabled": true
+    }
+  ]
+}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# ADMIN — SITE KIT (Google)
+# ═══════════════════════════════════════════════════════════════
+
+### Site Kit status
+GET {{baseUrl}}/admin/site-kit/status
+Authorization: Bearer {{adminToken}}
+
+###
+
+### OAuth URL
+GET {{baseUrl}}/admin/site-kit/oauth/url
+Authorization: Bearer {{adminToken}}
+
+###
+
+### OAuth callback (paste code from Google)
+POST {{baseUrl}}/admin/site-kit/oauth/callback
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "code": "paste-google-auth-code-here"
+}
+
+###
+
+### Disconnect Google
+POST {{baseUrl}}/admin/site-kit/disconnect
+Authorization: Bearer {{adminToken}}
+
+###
+
+### Update Site Kit settings
+PATCH {{baseUrl}}/admin/site-kit/settings
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "siteUrl": "http://localhost:3000",
+  "propertyId": "",
+  "modules": {
+    "analytics": true,
+    "searchConsole": true,
+    "pagespeed": true,
+    "adsense": false
+  }
+}
+
+###
+
+### Site Kit dashboard
+GET {{baseUrl}}/admin/site-kit/dashboard?days=28
+Authorization: Bearer {{adminToken}}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# ADMIN — AUDIT
+# ═══════════════════════════════════════════════════════════════
+
+### Audit logs
+GET {{baseUrl}}/admin/audit-logs
+Authorization: Bearer {{adminToken}}
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# STATIC UPLOADS (served by Nest)
+# ═══════════════════════════════════════════════════════════════
+
+### Uploaded file (replace filename)
+GET {{baseUrl}}/uploads/media/example.jpg
+
+###
+
+# ═══════════════════════════════════════════════════════════════
+# PYTHON WORKERS (direct — ports 8100–8110)
+# ═══════════════════════════════════════════════════════════════
+
+### Temp mail — health
+GET {{tempMailWorker}}/health
+
+###
+
+### Temp mail — parse OTP
+POST {{tempMailWorker}}/parse/otp
+Content-Type: application/json
+
+{
+  "subject": "Your verification code",
+  "text": "Your code is 482910",
+  "html": ""
+}
+
+###
+
+### Temp mail — sanitize HTML
+POST {{tempMailWorker}}/sanitize/html
+Content-Type: application/json
+
+{
+  "html": "<p>Hello <script>alert(1)</script></p>"
+}
+
+###
+
+### QR — health
+GET {{qrWorker}}/health
+
+###
+
+### QR — generate
+POST {{qrWorker}}/generate
+Content-Type: application/json
+
+{
+  "data": "https://devhube.com",
+  "foreground": "#000000",
+  "background": "#ffffff",
+  "size_px": 512,
+  "error_correction": "H"
+}
+
+###
+
+### Image — health
+GET {{imageWorker}}/health
+
+###
+
+### Image — compress
+POST {{imageWorker}}/compress
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="photo.jpg"
+Content-Type: image/jpeg
+
+< ./samples/photo.jpg
+--B--
+
+###
+
+### PDF — health
+GET {{pdfWorker}}/health
+
+###
+
+### PDF — convert
+POST {{pdfWorker}}/convert
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+### Merge PDF — health
+GET {{mergePdfWorker}}/health
+
+###
+
+### Merge PDF — merge
+POST {{mergePdfWorker}}/merge
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="files"; filename="part-a.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B
+Content-Disposition: form-data; name="files"; filename="part-b.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+### Split PDF — health
+GET {{splitPdfWorker}}/health
+
+###
+
+### Split PDF — range
+POST {{splitPdfWorker}}/split
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B
+Content-Disposition: form-data; name="mode"
+
+range
+--B
+Content-Disposition: form-data; name="start_page"
+
+1
+--B
+Content-Disposition: form-data; name="end_page"
+
+2
+--B--
+
+###
+
+### Compress PDF — health
+GET {{compressPdfWorker}}/health
+
+###
+
+### Compress PDF — compress
+POST {{compressPdfWorker}}/compress
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--B--
+
+###
+
+### AI Assistant — health
+GET {{aiWorker}}/health
+
+###
+
+### AI Assistant — generate code
+POST {{aiWorker}}/generate/code
+Content-Type: application/json
+
+{
+  "prompt": "Hello world in Python",
+  "language": "python"
+}
+
+###
+
+### AI Assistant — paraphrase
+POST {{aiWorker}}/rewrite/paraphrase
+Content-Type: application/json
+
+{
+  "text": "Developers need fast utilities.",
+  "tone": "neutral"
+}
+
+###
+
+### AI Assistant — humanize
+POST {{aiWorker}}/rewrite/humanize
+Content-Type: application/json
+
+{
+  "text": "The solution facilitates outcomes.",
+  "tone": "casual"
+}
+
+###
+
+### AI Assistant — resume
+POST {{aiWorker}}/generate/resume
+Content-Type: application/json
+
+{
+  "full_name": "Jane Developer",
+  "job_title": "Engineer",
+  "summary": "Experienced builder",
+  "experience": "Built APIs",
+  "skills": "TypeScript",
+  "education": "BSc CS"
+}
+
+###
+
+### Image to text — health
+GET {{imageToTextWorker}}/health
+
+###
+
+### Image to text — OCR
+POST {{imageToTextWorker}}/extract
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="photo.png"
+Content-Type: image/png
+
+< ./samples/photo.png
+--B--
+
+###
+
+### Speech to text — health
+GET {{speechToTextWorker}}/health
+
+###
+
+### Speech to text — transcribe
+POST {{speechToTextWorker}}/transcribe
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="audio.wav"
+Content-Type: audio/wav
+
+< ./samples/audio.wav
+--B--
+
+###
+
+### Image converter — health
+GET {{imageConverterWorker}}/health
+
+###
+
+### Image converter — convert
+POST {{imageConverterWorker}}/convert?format=webp
+Content-Type: multipart/form-data; boundary=B
+
+--B
+Content-Disposition: form-data; name="file"; filename="photo.png"
+Content-Type: image/png
+
+< ./samples/photo.png
+--B--

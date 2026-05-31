@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useSiteSettings } from "@/hooks/use-site-settings";
 
 const chips = [
   { label: "{ json }", className: "left-[5%] top-[18%]" },
@@ -13,6 +16,8 @@ const chips = [
 ];
 
 export function Hero() {
+  const { settings } = useSiteSettings();
+
   return (
     <section className="relative flex flex-1 flex-col justify-center overflow-hidden fade-in py-6 sm:py-8">
       <div
@@ -45,15 +50,17 @@ export function Hero() {
       </div>
 
       <div className="relative mx-auto max-w-3xl px-4 text-center">
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">
+          {settings.tagline}
+        </p>
         <h1 className="font-display text-[2.35rem] sm:text-5xl md:text-[3.25rem] font-semibold leading-[1.05] tracking-tight text-foreground">
-          The developer&apos;s
+          {settings.heroTitle || "Build faster with"}
           <br />
           <span className="text-gradient">utility</span> hub.
         </h1>
 
         <p className="mt-4 text-sm sm:text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
-          Format, decode, generate, and test every tool you need to ship faster, in
-          one beautifully fast place.
+          {settings.heroSubtitle}
         </p>
 
         <div className="mt-6 flex flex-wrap gap-2.5 justify-center">

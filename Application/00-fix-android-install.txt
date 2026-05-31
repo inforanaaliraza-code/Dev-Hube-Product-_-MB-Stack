@@ -1,0 +1,51 @@
+ANDROID INSTALL ERROR — Can't find service: package
+====================================================
+
+Build SUCCESSFUL but APK install fails. This is the EMULATOR, not your Flutter code.
+
+CAUSE
+-----
+Emulator is connected but Android "package" service is dead (frozen / still booting / corrupted snapshot).
+
+FIX (try in order)
+------------------
+
+1) Android Studio → Device Manager → your emulator (sdk_gphone16k) →
+   Cold Boot Now   (or Stop, then Play again)
+
+2) Wait until home screen fully loads (1–2 min). Then PowerShell:
+
+   adb devices
+   adb shell pm list packages -3
+
+   If second command works (lists apps), emulator is OK.
+
+3) Install from terminal (not only Android Studio Run):
+
+   cd Application
+   flutter clean
+   flutter pub get
+   flutter run -d emulator-5554
+
+4) Still broken? Device Manager → emulator ▼ → Wipe Data → start again.
+
+5) Or create NEW emulator:
+   - Phone API 34 or 35, x86_64 (NOT 16k if issues persist)
+   - 4 GB RAM minimum
+
+6) Real phone instead:
+   - USB debugging ON
+   - adb devices  →  shows "device"
+   - flutter run
+
+AVOID
+-----
+- Running Install before emulator home screen is ready
+- Multiple emulators at once (close extras)
+
+WORKAROUND (no emulator)
+------------------------
+   flutter run -d chrome
+
+Your APK path when build works:
+   Application\build\app\intermediates\apk\debug\app-debug.apk

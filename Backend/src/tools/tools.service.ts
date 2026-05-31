@@ -15,6 +15,7 @@ import { ToolResponseDto } from './dto/tool-response.dto';
 import { AuditService } from '../audit/audit.service';
 import { UserEntity } from '../users/entities/user.entity';
 import { ToolEntity } from './entities/tool.entity';
+import { ToolBlogService } from './tool-blog.service';
 
 @Injectable()
 export class ToolsService implements OnModuleInit {
@@ -22,6 +23,7 @@ export class ToolsService implements OnModuleInit {
     @InjectRepository(ToolEntity)
     private readonly toolsRepo: Repository<ToolEntity>,
     private readonly auditService: AuditService,
+    private readonly toolBlogService: ToolBlogService,
   ) {}
 
   async onModuleInit() {
@@ -122,15 +124,47 @@ export class ToolsService implements OnModuleInit {
     return ToolResponseDto.fromEntity(saved);
   }
 
-  async remove(slug: string, actor?: UserEntity | null): Promise<void> {
+  async bulk(
+    slugs: string[],
+    action: 'delete' | 'setStatus' | 'setFeatured',
+    options: { status?: 'ready' | 'soon'; featured?: boolean },
+    actor?: UserEntity | null,
+  ) {
+    const unique = [...new Set(slugs.map((s) => s.trim()).filter(Boolean))];
+    let affected = 0;
+    const errors: string[] = [];
+
+    for (const slug of unique) {
+      try {
+        if (action === 'delete') {
+          await this.remove(slug, actor);
+          affected += 1;
+        } else if (action === 'setStatus' && options.status) {
+          await this.update(slug, { status: options.status }, actor);
+          affected += 1;
+        } else if (action === 'setFeatured' && options.featured !== undefined) {
+          await this.update(slug, { featured: options.featured }, actor);
+          affected += 1;
+        }
+      } catch {
+        errors.push(slug);
+      }
+    }
+
+    return { affected, failed: errors.length, errors };
+  }
+
+  async remove(slug: string, actor?: UserEntity | null): Promise<{ removed: boolean }> {
     const entity = await this.toolsRepo.findOne({ where: { slug } });
     if (!entity) {
-      throw new NotFoundException(`Tool "${slug}" not found`);
+      return { removed: false };
     }
     await this.auditService.log(actor ?? null, 'tool.delete', 'tool', slug, {
       name: entity.name,
     });
+    await this.toolBlogService.deleteByToolSlug(slug);
     await this.toolsRepo.remove(entity);
+    return { removed: true };
   }
 
   async searchByKeyword(keyword: string): Promise<ToolResponseDto[]> {

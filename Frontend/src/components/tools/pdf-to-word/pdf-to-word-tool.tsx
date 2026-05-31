@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   Download,
   FileText,
@@ -22,12 +22,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useWorkflowRunner } from "@/components/tools/shared/tool-workflow";
+import { useWorkerHealth } from "@/components/tools/shared/use-worker-health";
+import { WorkerStatusHint } from "@/components/tools/shared/worker-status-hint";
 import { glassCard } from "@/lib/ui-classes";
 import { cn } from "@/lib/utils";
 
 const MAX_BYTES = 25 * 1024 * 1024;
-const WORKER_HEALTH_MS = 60000;
-
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -47,18 +48,9 @@ export function PdfToWordTool() {
   const [usePageRange, setUsePageRange] = useState(false);
   const [startPage, setStartPage] = useState("1");
   const [endPage, setEndPage] = useState("");
-  const [converting, setConverting] = useState(false);
-  const [workerHealthy, setWorkerHealthy] = useState<boolean | null>(null);
+  const { run: flowRun, busy: converting } = useWorkflowRunner("file");
+  const { healthy: workerHealthy } = useWorkerHealth(getWorkerHealth);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const checkWorkerHealth = useCallback(async () => {
-    try {
-      const health = await getWorkerHealth();
-      setWorkerHealthy(health.ok);
-    } catch {
-      setWorkerHealthy(false);
-    }
-  }, []);
 
   const pickFile = useCallback((picked: File | undefined) => {
     if (!picked) return;
@@ -99,16 +91,15 @@ export function PdfToWordTool() {
       }
     }
 
-    setConverting(true);
     setResult(null);
     try {
-      const converted = await convertPdfToWord(file, options);
-      setResult(converted);
-      toast.success("DOCX ready to download");
+      await flowRun(async () => {
+        const converted = await convertPdfToWord(file, options);
+        setResult(converted);
+        toast.success("DOCX ready to download");
+      }, "Converting to Word…");
     } catch (err) {
       toast.error(err instanceof ApiError || err instanceof Error ? err.message : "Conversion failed");
-    } finally {
-      setConverting(false);
     }
   };
 
@@ -118,14 +109,6 @@ export function PdfToWordTool() {
     setStartPage("1");
     setEndPage("");
   };
-
-  useEffect(() => {
-    void checkWorkerHealth();
-    const timer = window.setInterval(() => {
-      void checkWorkerHealth();
-    }, WORKER_HEALTH_MS);
-    return () => window.clearInterval(timer);
-  }, [checkWorkerHealth]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
@@ -217,11 +200,7 @@ export function PdfToWordTool() {
             </Button>
           ) : null}
 
-          {workerHealthy === false ? (
-            <p className="text-xs text-amber-500">
-              Python worker offline. Start Services/pdf-to-word on port 8103.
-            </p>
-          ) : null}
+          <WorkerStatusHint healthy={workerHealthy} />
         </CardContent>
       </Card>
 

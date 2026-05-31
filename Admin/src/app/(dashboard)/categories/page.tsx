@@ -1,16 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { AdminHeader } from "@/components/admin/header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { WpPageHeader } from "@/components/admin/wp-page-header";
+import { WpPostbox } from "@/components/admin/wp-postbox";
 import { fetchCategories } from "@/store/slices/settingsSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
@@ -25,32 +17,25 @@ export default function CategoriesPage() {
 
   return (
     <>
-      <AdminHeader title="Categories" />
-      <main className="p-4 md:p-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Tool categories</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 pt-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Category</TableHead>
-                  <TableHead className="text-right">Tools</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {(data?.categories ?? []).map((c) => (
-                  <TableRow key={c}>
-                    <TableCell className="font-medium">{c}</TableCell>
-                    <TableCell className="text-right">{data?.counts[c] ?? 0}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </main>
+      <WpPageHeader title="Categories" />
+      <WpPostbox title="Tool categories">
+        <table className="wp-list-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Tools</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data?.categories.map((cat) => (
+              <tr key={cat}>
+                <td>{cat}</td>
+                <td>{data.counts[cat] ?? 0}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </WpPostbox>
     </>
   );
 }

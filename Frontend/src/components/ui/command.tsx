@@ -6,7 +6,7 @@ import { Command as CommandPrimitive } from "cmdk";
 import { Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
@@ -27,6 +27,7 @@ interface CommandDialogProps extends DialogProps {
   shouldFilter?: boolean;
   commandValue?: string;
   onCommandValueChange?: (value: string) => void;
+  title?: string;
 }
 
 const CommandDialog = ({
@@ -34,11 +35,13 @@ const CommandDialog = ({
   shouldFilter = true,
   commandValue,
   onCommandValueChange,
+  title = "Search",
   ...props
 }: CommandDialogProps) => {
   return (
     <Dialog {...props}>
       <DialogContent className="overflow-hidden p-0 max-w-xl glass shadow-3d ring-aurora [&>button]:hidden">
+        <DialogTitle className="sr-only">{title}</DialogTitle>
         <Command
           shouldFilter={shouldFilter}
           value={commandValue}

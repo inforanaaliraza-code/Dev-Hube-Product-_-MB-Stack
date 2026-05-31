@@ -1,0 +1,42 @@
+### Worker health (checks service=image-compressor on port 8102)
+GET {{baseUrl}}/image-compressor/health
+Accept: application/json
+
+###
+
+### Compress image — add Backend/http/samples/photo.jpg first (else REST Client shows file error)
+POST {{baseUrl}}/image-compressor/compress?quality=82&maxWidth=1920&outputFormat=auto&stripMetadata=true
+Content-Type: multipart/form-data; boundary=ImageBoundary
+
+--ImageBoundary
+Content-Disposition: form-data; name="file"; filename="photo.jpg"
+Content-Type: image/jpeg
+
+< ./samples/photo.jpg
+--ImageBoundary--
+
+###
+
+### Compress — WebP output, lower quality
+POST {{baseUrl}}/image-compressor/compress?quality=70&maxWidth=1280&outputFormat=webp&stripMetadata=true
+Content-Type: multipart/form-data; boundary=ImageBoundary
+
+--ImageBoundary
+Content-Disposition: form-data; name="file"; filename="photo.png"
+Content-Type: image/png
+
+< ./samples/photo.png
+--ImageBoundary--
+
+###
+
+### Compress — PNG, max quality
+POST {{baseUrl}}/image-compressor/compress?quality=100&outputFormat=png&stripMetadata=false
+Content-Type: multipart/form-data; boundary=ImageBoundary
+
+--ImageBoundary
+Content-Disposition: form-data; name="file"; filename="photo.webp"
+Content-Type: image/webp
+
+< ./samples/photo.webp
+--ImageBoundary--

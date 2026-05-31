@@ -1,0 +1,93 @@
+### Admin login (run first — copies token below)
+# @name adminLogin
+POST {{baseUrl}}/auth/admin/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.accessToken}}
+
+### List all tools (admin)
+GET {{baseUrl}}/admin/tools
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### List tools — query
+GET {{baseUrl}}/admin/tools?category=Media&featured=true
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Get tool by slug
+GET {{baseUrl}}/admin/tools/image-compressor
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Create tool
+POST {{baseUrl}}/admin/tools
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "slug": "demo-tool",
+  "name": "Demo Tool",
+  "tagline": "For API testing",
+  "description": "Temporary tool created via REST Client for smoke tests.",
+  "category": "Formatting",
+  "icon": "wrench",
+  "accent": "violet",
+  "status": "soon",
+  "keywords": ["demo", "test"],
+  "featured": false
+}
+
+###
+
+### Update tool status → ready
+PATCH {{baseUrl}}/admin/tools/qr-generator
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "status": "ready",
+  "featured": true
+}
+
+###
+
+### Update tool (partial)
+PATCH {{baseUrl}}/admin/tools/demo-tool
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "tagline": "Updated tagline from admin API"
+}
+
+###
+
+### Delete tool
+DELETE {{baseUrl}}/admin/tools/demo-tool
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Admin categories list
+GET {{baseUrl}}/admin/categories
+Authorization: Bearer {{adminToken}}
+Accept: application/json

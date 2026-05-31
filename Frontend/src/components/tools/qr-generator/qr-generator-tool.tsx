@@ -50,11 +50,13 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useWorkflowRunner } from "@/components/tools/shared/tool-workflow";
+import { useWorkerHealth } from "@/components/tools/shared/use-worker-health";
+import { WorkerStatusHint } from "@/components/tools/shared/worker-status-hint";
 import { glassCard } from "@/lib/ui-classes";
 import { cn } from "@/lib/utils";
 
 const ANALYTICS_POLL_MS = 12000;
-const WORKER_HEALTH_MS = 60000;
 const MAX_LOGO_BYTES = 512_000;
 
 function pngDataUrl(base64: string) {
@@ -101,9 +103,9 @@ export function QrGeneratorTool() {
   const [record, setRecord] = useState<QrCodeRecord | null>(null);
   const [previewBase64, setPreviewBase64] = useState<string | null>(null);
   const [analytics, setAnalytics] = useState<QrAnalytics | null>(null);
-  const [workerHealthy, setWorkerHealthy] = useState<boolean | null>(null);
+  const { healthy: workerHealthy, recheck: recheckWorkerHealth } = useWorkerHealth(getWorkerHealth);
   const [booting, setBooting] = useState(true);
-  const [generating, setGenerating] = useState(false);
+  const { run: flowRun, busy: generating } = useWorkflowRunner();
   const [savingTarget, setSavingTarget] = useState(false);
   const [refreshingAnalytics, setRefreshingAnalytics] = useState(false);
   const [dynamicTarget, setDynamicTarget] = useState("");
@@ -111,15 +113,6 @@ export function QrGeneratorTool() {
   const analyticsPollRef = useRef(false);
 
   const effectiveTrackScans = mode === "dynamic" || trackScans;
-
-  const checkWorkerHealth = useCallback(async () => {
-    try {
-      const health = await getWorkerHealth();
-      setWorkerHealthy(health.ok);
-    } catch {
-      setWorkerHealthy(false);
-    }
-  }, []);
 
   const loadAnalytics = useCallback(async (id: string, silent = false) => {
     if (!silent) {
@@ -171,41 +164,39 @@ export function QrGeneratorTool() {
       toast.error("Enter content for the QR code");
       return;
     }
-    setGenerating(true);
     try {
-      const input: CreateQrCodeInput = {
-        mode,
-        contentType,
-        payload: trimmed,
-        trackScans: mode === "static" ? trackScans : undefined,
-        foregroundColor,
-        backgroundColor,
-        errorCorrection,
-        sizePx,
-        logoBase64: logoBase64 ?? undefined,
-        logoScale,
-      };
-      const created = await createQrCode(input);
-      applyRecord(created);
-      toast.success("QR code generated");
+      await flowRun(async () => {
+        const input: CreateQrCodeInput = {
+          mode,
+          contentType,
+          payload: trimmed,
+          trackScans: mode === "static" ? trackScans : undefined,
+          foregroundColor,
+          backgroundColor,
+          errorCorrection,
+          sizePx,
+          logoBase64: logoBase64 ?? undefined,
+          logoScale,
+        };
+        const created = await createQrCode(input);
+        applyRecord(created);
+        toast.success("QR code generated");
+      }, "Generating QR…");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Generation failed");
-    } finally {
-      setGenerating(false);
     }
   };
 
   const handleRegeneratePreview = async () => {
     if (!record) return;
-    setGenerating(true);
     try {
-      const refreshed = await regenerateQrImage(record.id);
-      applyRecord(refreshed);
-      toast.success("Preview refreshed");
+      await flowRun(async () => {
+        const refreshed = await regenerateQrImage(record.id);
+        applyRecord(refreshed);
+        toast.success("Preview refreshed");
+      }, "Refreshing preview…");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not refresh preview");
-    } finally {
-      setGenerating(false);
     }
   };
 
@@ -257,7 +248,7 @@ export function QrGeneratorTool() {
   useEffect(() => {
     let cancelled = false;
     const boot = async () => {
-      await checkWorkerHealth();
+      await recheckWorkerHealth();
       const storedId = getStoredQrId();
       if (storedId) {
         try {
@@ -280,14 +271,10 @@ export function QrGeneratorTool() {
       }
     };
     void boot();
-    const healthTimer = window.setInterval(() => {
-      void checkWorkerHealth();
-    }, WORKER_HEALTH_MS);
     return () => {
       cancelled = true;
-      window.clearInterval(healthTimer);
     };
-  }, [applyRecord, checkWorkerHealth]);
+  }, [applyRecord, recheckWorkerHealth]);
 
   useEffect(() => {
     if (!record?.trackScans) {
@@ -516,10 +503,9 @@ export function QrGeneratorTool() {
             Generate QR code
           </Button>
 
+          <WorkerStatusHint healthy={workerHealthy} />
           {workerHealthy === false ? (
-            <p className="text-xs text-amber-500">
-              Python worker offline — using Node fallback (logo overlay may be limited).
-            </p>
+            <p className="text-xs text-muted-foreground">QR may use limited Node fallback without Python worker.</p>
           ) : null}
         </CardContent>
       </Card>

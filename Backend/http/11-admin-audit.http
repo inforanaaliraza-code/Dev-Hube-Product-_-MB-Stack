@@ -1,0 +1,19 @@
+### Admin login
+# @name adminLogin
+POST {{baseUrl}}/auth/admin/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.accessToken}}
+
+### Recent audit logs (last 100)
+GET {{baseUrl}}/admin/audit-logs
+Authorization: Bearer {{adminToken}}
+Accept: application/json

@@ -1,0 +1,23 @@
+services:
+  temp-mail:
+    ports: ["8100:8100"]
+  qr-generator:
+    ports: ["8101:8101"]
+  image-compressor:
+    ports: ["8102:8102"]
+  pdf-to-word:
+    ports: ["8103:8103"]
+  merge-pdf:
+    ports: ["8104:8104"]
+  split-pdf:
+    ports: ["8105:8105"]
+  compress-pdf:
+    ports: ["8106:8106"]
+  ai-assistant:
+    ports: ["8107:8107"]
+  image-to-text:
+    ports: ["8108:8108"]
+  speech-to-text:
+    ports: ["8109:8109"]
+  image-converter:
+    ports: ["8110:8110"]

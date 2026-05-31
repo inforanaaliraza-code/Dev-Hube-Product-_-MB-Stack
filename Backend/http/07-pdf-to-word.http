@@ -1,0 +1,30 @@
+### Worker health
+GET {{baseUrl}}/pdf-to-word/health
+Accept: application/json
+
+###
+
+### Convert PDF → DOCX (full document)
+# Put test PDF in ./samples/document.pdf
+POST {{baseUrl}}/pdf-to-word/convert
+Content-Type: multipart/form-data; boundary=PdfBoundary
+
+--PdfBoundary
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--PdfBoundary--
+
+###
+
+### Convert PDF — pages 1 to 3 only
+POST {{baseUrl}}/pdf-to-word/convert?startPage=1&endPage=3
+Content-Type: multipart/form-data; boundary=PdfBoundary
+
+--PdfBoundary
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--PdfBoundary--

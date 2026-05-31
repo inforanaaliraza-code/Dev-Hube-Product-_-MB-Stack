@@ -8,8 +8,11 @@
     "pnpm": ">=9"
   },
   "scripts": {
+    "prebuild": "pnpm install",
     "build": "nest build",
+    "prestart": "pnpm install && pnpm run build",
     "start": "nest start",
+    "prestart:dev": "pnpm install",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "seed": "ts-node -r dotenv/config -r tsconfig-paths/register src/database/seed.ts",
@@ -22,7 +25,8 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "check": "pnpm run typecheck && pnpm run lint"
+    "check": "pnpm run typecheck && pnpm run lint",
+    "audit:tools": "node ../scripts/audit-all-tools.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -37,8 +41,18 @@
     "class-validator": "^0.14.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "marked": "^15.0.7",
     "pg": "^8.13.0",
     "qrcode": "^1.5.4",
+    "sql-formatter": "^15.4.11",
+    "whoiser": "^1.8.0",
+    "clean-css": "^5.3.3",
+    "cron-parser": "^4.9.0",
+    "diff": "^7.0.0",
+    "js-beautify": "^1.15.4",
+    "turndown": "^7.2.0",
+    "ua-parser-js": "^2.0.0",
+    "uuid": "^11.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.20"
@@ -47,6 +61,10 @@
     "@eslint/js": "^9.32.0",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
+    "@types/diff": "^7.0.0",
+    "@types/js-beautify": "^1.14.3",
+    "@types/turndown": "^5.0.5",
+    "@types/ua-parser-js": "^0.7.39",
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.0",
     "@types/multer": "^1.4.12",

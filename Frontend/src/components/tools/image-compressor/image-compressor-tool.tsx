@@ -31,12 +31,14 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { useWorkflowRunner } from "@/components/tools/shared/tool-workflow";
+import { useWorkerHealth } from "@/components/tools/shared/use-worker-health";
+import { WorkerStatusHint } from "@/components/tools/shared/worker-status-hint";
 import { glassCard } from "@/lib/ui-classes";
 import { cn } from "@/lib/utils";
 
 const ACCEPT = "image/png,image/jpeg,image/webp";
 const MAX_FILE_BYTES = 15 * 1024 * 1024;
-const WORKER_HEALTH_MS = 60000;
 
 type JobStatus = "pending" | "compressing" | "done" | "error";
 
@@ -80,20 +82,11 @@ export function ImageCompressorTool() {
   const [resizeEnabled, setResizeEnabled] = useState(true);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("auto");
   const [stripMetadata, setStripMetadata] = useState(true);
-  const [workerHealthy, setWorkerHealthy] = useState<boolean | null>(null);
-  const [compressingAll, setCompressingAll] = useState(false);
+  const { healthy: workerHealthy } = useWorkerHealth(getWorkerHealth);
+  const { run: flowRun, busy: compressingAll } = useWorkflowRunner("file");
   const inputRef = useRef<HTMLInputElement>(null);
   const jobsRef = useRef(jobs);
   jobsRef.current = jobs;
-
-  const checkWorkerHealth = useCallback(async () => {
-    try {
-      const health = await getWorkerHealth();
-      setWorkerHealthy(health.ok);
-    } catch {
-      setWorkerHealthy(false);
-    }
-  }, []);
 
   const addFiles = useCallback((files: FileList | File[]) => {
     const list = Array.from(files);
@@ -151,12 +144,16 @@ export function ImageCompressorTool() {
       toast.message("Add images to compress");
       return;
     }
-    setCompressingAll(true);
-    for (const job of pending) {
-      await compressOne(job);
+    try {
+      await flowRun(async () => {
+        for (const job of pending) {
+          await compressOne(job);
+        }
+        toast.success("Compression finished");
+      }, "Compressing images…");
+    } catch {
+      toast.error("Compression failed");
     }
-    setCompressingAll(false);
-    toast.success("Compression finished");
   }, [compressOne]);
 
   const removeJob = useCallback((id: string) => {
@@ -177,14 +174,6 @@ export function ImageCompressorTool() {
     });
     setJobs([]);
   }, []);
-
-  useEffect(() => {
-    void checkWorkerHealth();
-    const timer = window.setInterval(() => {
-      void checkWorkerHealth();
-    }, WORKER_HEALTH_MS);
-    return () => window.clearInterval(timer);
-  }, [checkWorkerHealth]);
 
   useEffect(() => {
     return () => {
@@ -303,12 +292,7 @@ export function ImageCompressorTool() {
             Compress all
           </Button>
 
-          {workerHealthy === false ? (
-            <p className="text-xs text-amber-500">
-              Wrong or missing worker on port 8102. Stop that terminal (Ctrl+C), then run
-              Services\RUN-IMAGE-COMPRESSOR.bat — not qr-generator.
-            </p>
-          ) : null}
+          <WorkerStatusHint healthy={workerHealthy} />
         </CardContent>
       </Card>
 

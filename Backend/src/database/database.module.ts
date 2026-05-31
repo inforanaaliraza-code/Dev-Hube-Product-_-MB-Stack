@@ -10,16 +10,24 @@ import { QrScanEntity } from '../qr-generator/entities/qr-scan.entity';
 import { TempMailboxEntity } from '../temp-mail/entities/temp-mailbox.entity';
 import { ToolEntity } from '../tools/entities/tool.entity';
 import { UserEntity } from '../users/entities/user.entity';
+import { MediaAssetEntity } from '../cms/entities/media-asset.entity';
+import { CmsContentEntity } from '../cms/entities/cms-content.entity';
+import { PluginEntity } from '../plugins/entities/plugin.entity';
+import { ToolBlogPostEntity } from '../tools/entities/tool-blog-post.entity';
 
 const entities = [
   UserEntity,
   ToolEntity,
+  ToolBlogPostEntity,
   SiteSettingEntity,
   AdminAuditLogEntity,
   ToolFavoriteEntity,
   TempMailboxEntity,
   QrCodeEntity,
   QrScanEntity,
+  MediaAssetEntity,
+  CmsContentEntity,
+  PluginEntity,
 ];
 
 @Module({

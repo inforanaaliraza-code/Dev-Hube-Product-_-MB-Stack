@@ -16,11 +16,11 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; nav?: string }>;
 };
 
 export default async function ToolsPage({ searchParams }: PageProps) {
-  const { category } = await searchParams;
+  const { category, nav } = await searchParams;
   return (
     <Suspense
       fallback={
@@ -29,7 +29,7 @@ export default async function ToolsPage({ searchParams }: PageProps) {
         </div>
       }
     >
-      <ToolsView initialCategory={category} />
+      <ToolsView initialCategory={category} initialNav={nav} />
     </Suspense>
   );
 }

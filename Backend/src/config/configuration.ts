@@ -1,5 +1,6 @@
 export default () => ({
   port: parseInt(process.env.PORT ?? '4000', 10),
+  host: process.env.HOST ?? '0.0.0.0',
   nodeEnv: process.env.NODE_ENV ?? 'development',
   http: {
     bodyLimit: process.env.HTTP_BODY_LIMIT ?? '2mb',
@@ -43,5 +44,42 @@ export default () => ({
   pdfToWord: {
     workerUrl: process.env.PDF_TO_WORD_WORKER_URL ?? 'http://127.0.0.1:8103',
     maxBytes: parseInt(process.env.PDF_TO_WORD_MAX_BYTES ?? String(25 * 1024 * 1024), 10),
+  },
+  mergePdf: {
+    workerUrl: process.env.MERGE_PDF_WORKER_URL ?? 'http://127.0.0.1:8104',
+    maxFileBytes: parseInt(process.env.MERGE_PDF_MAX_FILE_BYTES ?? String(25 * 1024 * 1024), 10),
+    maxTotalBytes: parseInt(process.env.MERGE_PDF_MAX_TOTAL_BYTES ?? String(100 * 1024 * 1024), 10),
+    maxFiles: parseInt(process.env.MERGE_PDF_MAX_FILES ?? '20', 10),
+  },
+  splitPdf: {
+    workerUrl: process.env.SPLIT_PDF_WORKER_URL ?? 'http://127.0.0.1:8105',
+    maxBytes: parseInt(process.env.SPLIT_PDF_MAX_BYTES ?? String(25 * 1024 * 1024), 10),
+  },
+  compressPdf: {
+    workerUrl: process.env.COMPRESS_PDF_WORKER_URL ?? 'http://127.0.0.1:8106',
+    maxBytes: parseInt(process.env.COMPRESS_PDF_MAX_BYTES ?? String(25 * 1024 * 1024), 10),
+  },
+  aiAssistant: {
+    workerUrl: process.env.AI_ASSISTANT_WORKER_URL ?? 'http://127.0.0.1:8107',
+  },
+  imageToText: {
+    workerUrl: process.env.IMAGE_TO_TEXT_WORKER_URL ?? 'http://127.0.0.1:8108',
+    maxBytes: parseInt(process.env.IMAGE_TO_TEXT_MAX_BYTES ?? String(15 * 1024 * 1024), 10),
+  },
+  speechToText: {
+    workerUrl: process.env.SPEECH_TO_TEXT_WORKER_URL ?? 'http://127.0.0.1:8109',
+    maxBytes: parseInt(process.env.SPEECH_TO_TEXT_MAX_BYTES ?? String(25 * 1024 * 1024), 10),
+  },
+  imageConverter: {
+    workerUrl: process.env.IMAGE_CONVERTER_WORKER_URL ?? 'http://127.0.0.1:8110',
+  },
+  googleSiteKit: {
+    clientId: process.env.GOOGLE_SITE_KIT_CLIENT_ID ?? '',
+    clientSecret: process.env.GOOGLE_SITE_KIT_CLIENT_SECRET ?? '',
+    redirectUri:
+      process.env.GOOGLE_SITE_KIT_REDIRECT_URI ??
+      'http://localhost:3001/site-kit/oauth/callback',
+    pagespeedApiKey: process.env.GOOGLE_PAGESPEED_API_KEY ?? '',
+    defaultSiteUrl: process.env.PUBLIC_SITE_URL ?? 'http://localhost:3000',
   },
 });

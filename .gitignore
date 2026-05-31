@@ -23,6 +23,18 @@ bun.lockb
 .nitro
 *.local
 
+.env
+.env.production
+.env.*.local
+!**/.env.example
+!deploy/env.production.example
+
+Backend/uploads/*
+!Backend/uploads/.gitkeep
+
+Services/**/.venv
+Services/.worker-pids
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars

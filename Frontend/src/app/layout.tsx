@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { MaintenanceGate } from "@/components/maintenance-gate";
 import { Providers } from "./providers";
 import "@/styles.css";
 
@@ -55,7 +56,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <div className="relative min-h-screen flex flex-col">
             <SiteHeader />
-            <main className="relative flex-1 z-10">{children}</main>
+            <main className="relative flex-1 z-10">
+              <MaintenanceGate>{children}</MaintenanceGate>
+            </main>
             <SiteFooter />
           </div>
         </Providers>

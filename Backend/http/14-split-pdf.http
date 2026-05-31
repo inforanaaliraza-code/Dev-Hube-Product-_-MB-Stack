@@ -1,0 +1,29 @@
+### Health
+GET {{baseUrl}}/split-pdf/health
+Accept: application/json
+
+###
+
+### Split page range (needs ./samples/document.pdf)
+POST {{baseUrl}}/split-pdf/split?mode=range&startPage=1&endPage=2
+Content-Type: multipart/form-data; boundary=SplitBoundary
+
+--SplitBoundary
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--SplitBoundary--
+
+###
+
+### Split every page as ZIP
+POST {{baseUrl}}/split-pdf/split?mode=each
+Content-Type: multipart/form-data; boundary=SplitBoundary
+
+--SplitBoundary
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--SplitBoundary--

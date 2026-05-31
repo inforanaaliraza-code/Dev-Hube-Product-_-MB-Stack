@@ -96,7 +96,7 @@ export class ImageWorkerClient {
   async isHealthy(): Promise<boolean> {
     try {
       const res = await fetch(`${this.baseUrl}/health`, {
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(8000),
       });
       if (!res.ok) {
         return false;

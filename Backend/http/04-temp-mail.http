@@ -1,0 +1,67 @@
+### Worker health (Nest → Python proxy check)
+GET {{baseUrl}}/temp-mail/health
+Accept: application/json
+
+###
+
+### List disposable domains
+GET {{baseUrl}}/temp-mail/domains
+Accept: application/json
+
+###
+
+### Create mailbox (random address)
+# @name createMailbox
+POST {{baseUrl}}/temp-mail/mailboxes
+Content-Type: application/json
+Accept: application/json
+
+{}
+
+###
+
+### Create mailbox (custom local + domain)
+POST {{baseUrl}}/temp-mail/mailboxes
+Content-Type: application/json
+Accept: application/json
+
+{
+  "localPart": "john.test",
+  "domain": "virgilian.com"
+}
+
+###
+
+@newMailboxId = {{createMailbox.response.body.id}}
+
+### Get mailbox — use @newMailboxId or set mailboxId in http-client.env.json
+GET {{baseUrl}}/temp-mail/mailboxes/{{newMailboxId}}
+Accept: application/json
+
+###
+
+GET {{baseUrl}}/temp-mail/mailboxes/{{mailboxId}}
+Accept: application/json
+
+###
+
+### List messages
+GET {{baseUrl}}/temp-mail/mailboxes/{{newMailboxId}}/messages
+Accept: application/json
+
+###
+
+GET {{baseUrl}}/temp-mail/mailboxes/{{mailboxId}}/messages
+Accept: application/json
+
+###
+
+### Get message detail (set messageId from list response)
+GET {{baseUrl}}/temp-mail/mailboxes/{{mailboxId}}/messages/{{messageId}}
+Accept: application/json
+
+###
+
+### Delete mailbox
+DELETE {{baseUrl}}/temp-mail/mailboxes/{{mailboxId}}
+Accept: application/json

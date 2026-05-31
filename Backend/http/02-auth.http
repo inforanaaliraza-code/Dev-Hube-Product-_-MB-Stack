@@ -1,0 +1,54 @@
+### Register (public user)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}",
+  "name": "Test User"
+}
+
+###
+
+### Login (public user)
+# @name userLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{userEmail}}",
+  "password": "{{userPassword}}"
+}
+
+###
+
+@userToken = {{userLogin.response.body.accessToken}}
+
+### Current user (JWT)
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{userToken}}
+Accept: application/json
+
+###
+
+### Admin login
+# @name adminLogin
+POST {{baseUrl}}/auth/admin/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.accessToken}}
+
+### Admin profile (JWT + role)
+GET {{baseUrl}}/auth/admin/me
+Authorization: Bearer {{adminToken}}
+Accept: application/json

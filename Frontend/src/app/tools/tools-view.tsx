@@ -3,45 +3,44 @@
 import { useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Fuse from "fuse.js";
-import { Search } from "lucide-react";
-import { tools, categories, type ToolCategory, categoryCounts } from "@/lib/tools";
+import { LayoutGrid, Search } from "lucide-react";
+import { tools } from "@/lib/tools";
+import { TOOL_NAV_ROOTS, getSlugsForNavRoot } from "@/lib/tool-nav";
+import { TOOL_NAV_ICON_MAP } from "@/lib/tool-visuals";
 import { ToolCard } from "@/components/tool-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
-  setActiveCategory,
+  setActiveNav,
   setSearchQuery,
-  type CategoryFilter,
+  type NavFilter,
 } from "@/store/slices/toolsSlice";
 
-function parseCategory(value: string | undefined): CategoryFilter {
+function parseNav(value: string | undefined): NavFilter {
   if (!value) return "All";
-  if ((categories as readonly string[]).includes(value)) {
-    return value as ToolCategory;
-  }
-  return "All";
+  return TOOL_NAV_ROOTS.some((r) => r.id === value) ? value : "All";
 }
 
-export function ToolsView({ initialCategory }: { initialCategory?: string }) {
+export function ToolsView({
+  initialNav,
+}: {
+  initialCategory?: string;
+  initialNav?: string;
+}) {
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  const active = useAppSelector((s) => s.tools.activeCategory);
+  const activeNav = useAppSelector((s) => s.tools.activeNav);
   const q = useAppSelector((s) => s.tools.searchQuery);
 
   useEffect(() => {
-    dispatch(setActiveCategory(parseCategory(initialCategory)));
-  }, [initialCategory, dispatch]);
+    dispatch(setActiveNav(parseNav(initialNav)));
+  }, [initialNav, dispatch]);
 
   useEffect(() => {
-    dispatch(setActiveCategory(parseCategory(searchParams.get("category") ?? undefined)));
+    dispatch(setActiveNav(parseNav(searchParams.get("nav") ?? undefined)));
   }, [searchParams, dispatch]);
 
   const fuse = useMemo(
@@ -55,63 +54,66 @@ export function ToolsView({ initialCategory }: { initialCategory?: string }) {
 
   const list = useMemo(() => {
     let pool = tools;
-    if (active !== "All") pool = pool.filter((t) => t.category === active);
+    if (activeNav !== "All") {
+      const slugs = new Set(getSlugsForNavRoot(activeNav));
+      pool = pool.filter((t) => slugs.has(t.slug));
+    }
     if (q.trim()) {
       const found = new Set(fuse.search(q).map((r) => r.item.slug));
       pool = pool.filter((t) => found.has(t.slug));
     }
     return pool;
-  }, [active, q, fuse]);
+  }, [activeNav, q, fuse]);
 
   return (
     <div className="relative pt-32 pb-24 mx-auto max-w-7xl px-4">
-      <header className="text-center mb-12">
+      <header className="text-center mb-10">
         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground mb-3">
-          The hub
+          Developer tools
         </p>
-        <h1 className="font-display text-4xl sm:text-6xl font-semibold tracking-tight">
+        <h1 className="font-display text-4xl sm:text-5xl font-semibold tracking-tight">
           Every tool, <span className="text-gradient">one place.</span>
         </h1>
-        <p className="mt-4 text-muted-foreground max-w-xl mx-auto">
-          {tools.length} utilities and counting. Click any card to open the tool.
+        <p className="mt-3 text-muted-foreground max-w-lg mx-auto text-sm sm:text-base">
+          {tools.length} professional utilities for encoding, code, JSON/XML, security and more.
         </p>
       </header>
 
-      <div className="sticky top-20 z-30 mb-8">
-        <Card className="glass-solid shadow-card rounded-2xl p-3 flex flex-col sm:flex-row gap-3 items-stretch border-border">
-          <div className="flex items-center gap-2 flex-1 px-1">
-            <Search className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+      <div className="sticky top-[4.5rem] z-30 mb-8">
+        <Card className="glass-solid shadow-card rounded-2xl p-3 border-border/70">
+          <div className="flex items-center gap-2 rounded-xl bg-secondary/25 border border-border/50 px-3 h-11 mb-3">
+            <Search className="h-4 w-4 text-muted-foreground shrink-0" />
             <Input
               value={q}
               onChange={(e) => dispatch(setSearchQuery(e.target.value))}
               placeholder="Search tools…"
-              className="flex-1 border-0 shadow-none focus-visible:ring-0 h-10 bg-transparent"
+              className="flex-1 border-0 shadow-none focus-visible:ring-0 h-9 bg-transparent text-sm"
             />
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {(["All", ...categories] as const).map((c) => {
-              const count = c === "All" ? tools.length : categoryCounts[c];
+            {(["All", ...TOOL_NAV_ROOTS.map((r) => r.id)] as const).map((n) => {
+              const root = n === "All" ? null : TOOL_NAV_ROOTS.find((r) => r.id === n);
+              const label = n === "All" ? "All tools" : (root?.label ?? n);
+              const selected = activeNav === n;
+              const Icon = n === "All" ? LayoutGrid : root ? TOOL_NAV_ICON_MAP[root.icon] : LayoutGrid;
               return (
-                <Tooltip key={c}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant={active === c ? "default" : "ghost"}
-                      size="sm"
-                      onClick={() => dispatch(setActiveCategory(c))}
-                      className={cn(
-                        "h-10 text-xs font-medium",
-                        active === c &&
-                          "bg-gradient-to-br from-aurora-1 to-aurora-3 text-primary-foreground shadow-glow border-0 hover:opacity-95",
-                      )}
-                    >
-                      {c}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {c === "All" ? `All ${count} tools` : `${count} tools in ${c}`}
-                  </TooltipContent>
-                </Tooltip>
+                <Button
+                  key={n}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => dispatch(setActiveNav(n))}
+                  className={cn(
+                    "h-9 gap-1.5 text-xs font-medium border border-transparent",
+                    selected &&
+                      "bg-secondary/80 text-foreground border-border/80 shadow-sm",
+                    !selected && "text-muted-foreground hover:text-foreground hover:bg-secondary/40",
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+                  <span className="hidden sm:inline">{label}</span>
+                  <span className="sm:hidden">{n === "All" ? "All" : root?.label.split(" ")[0]}</span>
+                </Button>
               );
             })}
           </div>

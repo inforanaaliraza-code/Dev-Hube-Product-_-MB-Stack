@@ -1,0 +1,112 @@
+### Worker health
+GET {{baseUrl}}/qr-generator/health
+Accept: application/json
+
+###
+
+### Create static QR (URL, no tracking)
+# @name qrStatic
+POST {{baseUrl}}/qr-generator/codes
+Content-Type: application/json
+Accept: application/json
+
+{
+  "mode": "static",
+  "contentType": "url",
+  "payload": "https://mbstack.net/",
+  "foregroundColor": "#000000",
+  "backgroundColor": "#ffffff",
+  "errorCorrection": "H",
+  "sizePx": 512
+}
+
+###
+
+### Create static QR + track scans (redirect link)
+# @name qrTracked
+POST {{baseUrl}}/qr-generator/codes
+Content-Type: application/json
+Accept: application/json
+
+{
+  "mode": "static",
+  "contentType": "url",
+  "payload": "https://example.com",
+  "trackScans": true,
+  "foregroundColor": "#1a1a2e",
+  "backgroundColor": "#ffffff",
+  "errorCorrection": "H",
+  "sizePx": 512
+}
+
+###
+
+@trackedQrId = {{qrTracked.response.body.id}}
+@trackedShortCode = {{qrTracked.response.body.shortCode}}
+
+### Create dynamic QR (editable destination)
+# @name qrDynamic
+POST {{baseUrl}}/qr-generator/codes
+Content-Type: application/json
+Accept: application/json
+
+{
+  "mode": "dynamic",
+  "contentType": "url",
+  "payload": "https://google.com",
+  "foregroundColor": "#000000",
+  "backgroundColor": "#ffffff",
+  "errorCorrection": "H",
+  "sizePx": 512
+}
+
+###
+
+@dynamicQrId = {{qrDynamic.response.body.id}}
+
+### Get QR by id
+GET {{baseUrl}}/qr-generator/codes/{{trackedQrId}}
+Accept: application/json
+
+###
+
+GET {{baseUrl}}/qr-generator/codes/{{qrCodeId}}
+Accept: application/json
+
+###
+
+### Regenerate PNG preview
+GET {{baseUrl}}/qr-generator/codes/{{trackedQrId}}/image
+Accept: application/json
+
+###
+
+### Update dynamic destination URL
+PATCH {{baseUrl}}/qr-generator/codes/{{dynamicQrId}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "payload": "https://github.com"
+}
+
+###
+
+### Scan analytics
+GET {{baseUrl}}/qr-generator/codes/{{trackedQrId}}/analytics
+Accept: application/json
+
+###
+
+### Public redirect (open in browser — records scan)
+GET {{baseUrl}}/qr-generator/go/{{trackedShortCode}}
+
+###
+
+GET {{baseUrl}}/qr-generator/go/{{qrShortCode}}
+
+###
+
+### Delete QR
+DELETE {{baseUrl}}/qr-generator/codes/{{qrCodeId}}
+Accept: application/json

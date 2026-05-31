@@ -1,0 +1,21 @@
+### Health
+GET {{baseUrl}}/merge-pdf/health
+Accept: application/json
+
+###
+
+### Merge two PDFs (needs ./samples/document.pdf — add two copies or a second PDF as part-b.pdf)
+POST {{baseUrl}}/merge-pdf/merge
+Content-Type: multipart/form-data; boundary=MergeBoundary
+
+--MergeBoundary
+Content-Disposition: form-data; name="files"; filename="part-a.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--MergeBoundary
+Content-Disposition: form-data; name="files"; filename="part-b.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--MergeBoundary--

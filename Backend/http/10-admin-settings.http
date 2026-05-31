@@ -1,0 +1,49 @@
+### Admin login
+# @name adminLogin
+POST {{baseUrl}}/auth/admin/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.accessToken}}
+
+### Get all site settings
+GET {{baseUrl}}/admin/settings
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+###
+
+### Update site setting (key = site)
+PATCH {{baseUrl}}/admin/settings/site
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "value": {
+    "name": "Dev Hube",
+    "tagline": "The developer utility hub"
+  }
+}
+
+###
+
+### Update gallery setting
+PATCH {{baseUrl}}/admin/settings/gallery
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+Accept: application/json
+
+{
+  "value": {
+    "enabled": true,
+    "title": "Tool gallery"
+  }
+}

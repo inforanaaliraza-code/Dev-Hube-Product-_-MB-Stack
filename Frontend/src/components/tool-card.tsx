@@ -4,7 +4,8 @@ import { memo } from "react";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { ToolIcon } from "@/components/tool-icon";
-import { accentClass, toolHref, type Tool } from "@/lib/tools";
+import { TOOL_ACCENT_ICON, TOOL_ACCENT_RING } from "@/lib/tool-visuals";
+import { toolHref, type Tool } from "@/lib/tools";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -27,17 +28,21 @@ export const ToolCard = memo(function ToolCard({ tool }: Props) {
           <Card
             className={cn(
               glassCard,
-              "h-full overflow-hidden transition-[transform,box-shadow] duration-200 hover:-translate-y-1 hover:shadow-3d",
+              "h-full overflow-hidden border-border/70 transition-[transform,box-shadow,border-color] duration-200",
+              "hover:-translate-y-0.5 hover:shadow-lg hover:border-border",
             )}
           >
             <CardHeader className="flex flex-row items-start justify-between space-y-0 p-5 pb-0">
               <div
                 className={cn(
-                  "h-12 w-12 rounded-xl bg-gradient-to-br grid place-items-center shrink-0",
-                  accentClass[tool.accent],
+                  "h-11 w-11 rounded-xl border grid place-items-center shrink-0 transition-colors",
+                  TOOL_ACCENT_RING[tool.accent],
                 )}
               >
-                <ToolIcon name={tool.icon} className="text-primary-foreground" />
+                <ToolIcon
+                  name={tool.icon}
+                  className={cn("h-5 w-5", TOOL_ACCENT_ICON[tool.accent])}
+                />
               </div>
               <div className="flex items-center gap-1.5">
                 {tool.status === "soon" && (
@@ -46,16 +51,18 @@ export const ToolCard = memo(function ToolCard({ tool }: Props) {
                     Soon
                   </Badge>
                 )}
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all" />
               </div>
             </CardHeader>
             <CardContent className="p-5 pt-4">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground mb-2">
                 {tool.category}
               </p>
-              <h3 className="font-display font-semibold text-lg mb-1.5">{tool.name}</h3>
+              <h3 className="font-display font-semibold text-lg mb-1.5 leading-snug group-hover:text-primary transition-colors">
+                {tool.name}
+              </h3>
               <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                {tool.description}
+                {tool.tagline}
               </p>
             </CardContent>
           </Card>

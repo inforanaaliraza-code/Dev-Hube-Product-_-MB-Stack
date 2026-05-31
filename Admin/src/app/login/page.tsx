@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { BrandLogo } from "@/components/brand-logo";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authApi } from "@/lib/api";
@@ -48,16 +46,16 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center p-4 bg-gradient-to-br from-background via-background to-primary/10">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
-          <BrandLogo variant="login" linked={false} />
-          <div className="space-y-1 text-center">
-            <CardTitle>Admin</CardTitle>
-            <CardDescription>Sign in with your admin account</CardDescription>
+    <div className="wp-login-wrap">
+      <div className="wp-postbox w-full max-w-[420px] glow">
+        <div className="wp-postbox-inside">
+          <div className="flex flex-col items-center gap-3 mb-8">
+            <BrandLogo variant="login" linked={false} />
+            <h1 className="wp-heading">Admin Console</h1>
+            <p className="text-muted-foreground text-sm m-0 text-center">
+              AI workflow hub · manage tools, content & site
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -79,12 +77,12 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <button type="submit" className="wp-button-primary w-full justify-center" disabled={loading}>
               {loading ? "Signing in…" : "Sign in"}
-            </Button>
+            </button>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

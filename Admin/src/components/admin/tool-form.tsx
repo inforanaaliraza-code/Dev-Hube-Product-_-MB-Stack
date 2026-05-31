@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +9,7 @@ import type { ToolInput } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const selectClass =
-  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
+  "flex h-9 w-full rounded-lg border border-input bg-background/50 px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 interface ToolFormProps {
   initial?: Partial<ToolInput>;
@@ -44,13 +43,22 @@ export function ToolForm({ initial, submitLabel, onSubmit }: ToolFormProps) {
     e.preventDefault();
     setSaving(true);
     try {
-      await onSubmit({
-        ...form,
+      const payload: ToolInput = {
+        slug: form.slug,
+        name: form.name,
+        tagline: form.tagline,
+        description: form.description,
+        category: form.category,
+        icon: form.icon,
+        accent: form.accent,
+        status: form.status,
+        featured: form.featured ?? false,
         keywords: keywordsText
           .split(",")
           .map((k) => k.trim())
           .filter(Boolean),
-      });
+      };
+      await onSubmit(payload);
     } finally {
       setSaving(false);
     }
@@ -169,9 +177,9 @@ export function ToolForm({ initial, submitLabel, onSubmit }: ToolFormProps) {
         />
         Featured on homepage
       </label>
-      <Button type="submit" disabled={saving}>
+      <button type="submit" className="wp-button-primary" disabled={saving}>
         {saving ? "Saving…" : submitLabel}
-      </Button>
+      </button>
     </form>
   );
 }

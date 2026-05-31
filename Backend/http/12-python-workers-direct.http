@@ -1,0 +1,141 @@
+### Temp mail worker — health
+GET {{tempMailWorker}}/health
+Accept: application/json
+
+###
+
+### Temp mail — parse OTP
+POST {{tempMailWorker}}/parse/otp
+Content-Type: application/json
+Accept: application/json
+
+{
+  "subject": "Your verification code",
+  "text": "Your code is 482910",
+  "html": ""
+}
+
+###
+
+### Temp mail — sanitize HTML
+POST {{tempMailWorker}}/sanitize/html
+Content-Type: application/json
+Accept: application/json
+
+{
+  "html": "<p>Hello <script>alert(1)</script></p>"
+}
+
+###
+
+### QR worker — health (must show service: qr-generator)
+GET {{qrWorker}}/health
+Accept: application/json
+
+###
+
+### QR worker — generate PNG
+POST {{qrWorker}}/generate
+Content-Type: application/json
+Accept: application/json
+
+{
+  "data": "https://devhube.com",
+  "foreground": "#000000",
+  "background": "#ffffff",
+  "size_px": 512,
+  "error_correction": "H"
+}
+
+###
+
+### Image worker — health (must show service: image-compressor)
+GET {{imageWorker}}/health
+Accept: application/json
+
+###
+
+### Image worker — compress (file in ../http/samples/)
+POST {{imageWorker}}/compress
+Content-Type: multipart/form-data; boundary=W
+
+--W
+Content-Disposition: form-data; name="file"; filename="photo.jpg"
+Content-Type: image/jpeg
+
+< ./samples/photo.jpg
+--W--
+
+###
+
+### PDF worker — health
+GET {{pdfWorker}}/health
+Accept: application/json
+
+###
+
+### PDF worker — convert
+POST {{pdfWorker}}/convert
+Content-Type: multipart/form-data; boundary=W
+
+--W
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--W--
+
+###
+
+### Merge PDF worker — health (must show service: merge-pdf)
+GET {{mergePdfWorker}}/health
+Accept: application/json
+
+###
+
+### Merge PDF worker — merge two files
+POST {{mergePdfWorker}}/merge
+Content-Type: multipart/form-data; boundary=W
+
+--W
+Content-Disposition: form-data; name="files"; filename="part-a.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--W
+Content-Disposition: form-data; name="files"; filename="part-b.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--W--
+
+###
+
+### Split PDF worker — health (must show service: split-pdf)
+GET {{splitPdfWorker}}/health
+Accept: application/json
+
+###
+
+### Split PDF worker — range
+POST {{splitPdfWorker}}/split
+Content-Type: multipart/form-data; boundary=W
+
+--W
+Content-Disposition: form-data; name="file"; filename="document.pdf"
+Content-Type: application/pdf
+
+< ./samples/document.pdf
+--W
+Content-Disposition: form-data; name="mode"
+
+range
+--W
+Content-Disposition: form-data; name="start_page"
+
+1
+--W
+Content-Disposition: form-data; name="end_page"
+
+2
+--W--

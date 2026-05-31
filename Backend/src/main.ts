@@ -2,6 +2,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { existsSync, mkdirSync } from 'fs';
+import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -11,6 +13,10 @@ async function bootstrap() {
   const bodyLimit = config.get<string>('http.bodyLimit') ?? '2mb';
   app.useBodyParser('json', { limit: bodyLimit });
   app.useBodyParser('urlencoded', { limit: bodyLimit, extended: true });
+
+  const uploadsDir = join(process.cwd(), 'uploads');
+  if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
+  app.useStaticAssets(uploadsDir, { prefix: '/api/v1/uploads/' });
 
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
@@ -28,7 +34,8 @@ async function bootstrap() {
   });
 
   const port = config.get<number>('port') ?? 4000;
-  await app.listen(port);
+  const host = config.get<string>('host') ?? '0.0.0.0';
+  await app.listen(port, host);
 }
 
 bootstrap();

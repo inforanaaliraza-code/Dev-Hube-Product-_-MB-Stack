@@ -70,7 +70,7 @@ export class MailWorkerClient {
   async isHealthy(): Promise<boolean> {
     try {
       const res = await fetch(`${this.baseUrl}/health`, {
-        signal: AbortSignal.timeout(3000),
+        signal: AbortSignal.timeout(8000),
       });
       return res.ok;
     } catch {

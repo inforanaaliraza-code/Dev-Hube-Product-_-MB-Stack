@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit",
     "type-check": "pnpm run typecheck",
     "check": "pnpm run typecheck && pnpm run lint",
+    "audit:tools": "node ../scripts/audit-all-tools.mjs",
     "format": "prettier --write ."
   },
   "dependencies": {
