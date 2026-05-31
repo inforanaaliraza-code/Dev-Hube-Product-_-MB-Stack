@@ -28,6 +28,7 @@ class ToolRunner {
     c.resultFileBase64.value = '';
     c.previewHtml.value = '';
     c.thumbnailUrls.clear();
+    c.hashResults.clear();
     c.paletteColors.clear();
     c.speedTestDone.value = false;
 
@@ -129,9 +130,14 @@ class ToolRunner {
               : (res['error']?.toString() ?? 'Invalid JSON');
           return;
         case ToolKind.hash:
-          c.output.value = ToolOutput.fromResponse(
-            await c.dev.post('/hash-generator/generate', {'text': text}),
-          );
+          final hashRes = await c.dev.post('/hash-generator/generate', {'text': text});
+          final hashes = hashRes['hashes'];
+          if (hashes is Map) {
+            c.hashResults
+              ..clear()
+              ..addAll(hashes.map((k, v) => MapEntry(k.toString(), v.toString())));
+          }
+          c.output.value = ToolOutput.fromResponse(hashRes);
           return;
         case ToolKind.timestamp:
           c.output.value = ToolOutput.fromResponse(
@@ -242,13 +248,13 @@ class ToolRunner {
           c.apiHistoryEpoch.value++;
           return;
         case ToolKind.metaTags:
-          c.output.value = ToolOutput.fromResponse(
-            await c.dev.post('/meta-tags-generator/generate', {
-              'title': text,
-              'description': c.input2.value,
-              'url': c.fieldUrl.value,
-            }),
-          );
+          final metaRes = await c.dev.post('/meta-tags-generator/generate', {
+            'title': text,
+            'description': c.input2.value,
+            'url': c.fieldUrl.value,
+          });
+          c.previewHtml.value = metaRes['html']?.toString() ?? '';
+          c.output.value = ToolOutput.fromResponse(metaRes);
           return;
         case ToolKind.robotsTxt:
           c.output.value = ToolOutput.fromResponse(

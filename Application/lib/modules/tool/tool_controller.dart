@@ -41,6 +41,7 @@ class ToolController extends GetxController {
   final pickedFiles = <PlatformFile>[].obs;
   final previewHtml = ''.obs;
   final thumbnailUrls = <String, String>{}.obs;
+  final hashResults = <String, String>{}.obs;
   final paletteColors = <String>[].obs;
   final paletteGradient = ''.obs;
   final paletteCssVars = ''.obs;
@@ -142,6 +143,15 @@ class ToolController extends GetxController {
       case ToolKind.sqlFormatter:
         mode.value = 'postgresql';
         break;
+      case ToolKind.jsonFormat:
+        mode.value = 'format';
+        break;
+      case ToolKind.timestamp:
+        mode.value = 'toDate';
+        break;
+      case ToolKind.caseConvert:
+        mode.value = 'camel';
+        break;
       case ToolKind.unitConverter:
         mode.value = 'px-rem';
         break;
@@ -240,6 +250,7 @@ class ToolController extends GetxController {
     output.value = '';
     previewHtml.value = '';
     thumbnailUrls.clear();
+    hashResults.clear();
     paletteColors.clear();
     speedTestDone.value = false;
     speedRating.value = '';
